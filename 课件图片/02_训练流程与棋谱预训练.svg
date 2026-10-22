@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3200" height="1800" viewBox="0 0 1600 900" role="img">
+<title>中国象棋 · 棋谱预训练与自对弈训练</title><desc>先通过棋谱学习落子，再通过搜索与自对弈迭代模型；图中明确区分实现状态</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text x="68" y="64" fill="#172D3A" font-size="42" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="start" dominant-baseline="central">中国象棋 · 棋谱预训练与自对弈训练</text>
+<text x="70" y="116" fill="#566A75" font-size="22" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">先通过棋谱学习落子，再通过搜索与自对弈迭代模型；图中明确区分实现状态</text>
+<text x="70" y="166" fill="#9B671D" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="start" dominant-baseline="central">拟扩展 · 棋谱监督预训练（当前项目尚未实现）</text>
+<rect x="80" y="205" width="420" height="110" rx="0" fill="#FCF5E9" stroke="#9B671D" stroke-width="2" stroke-dasharray="9 7"/>
+<text x="290.0" y="231.0" fill="#9B671D" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">高手棋谱</text>
+<text x="290.0" y="265.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">读取完整对局与最终胜负</text>
+<text x="290.0" y="294.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">按整盘划分训练集 / 验证集</text>
+<rect x="590" y="205" width="420" height="110" rx="0" fill="#FCF5E9" stroke="#9B671D" stroke-width="2" stroke-dasharray="9 7"/>
+<text x="800.0" y="231.0" fill="#9B671D" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">还原局面与训练标签</text>
+<text x="800.0" y="265.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">输入：每步落子前的局面</text>
+<text x="800.0" y="294.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">标签：高手走法 a*、胜负 z</text>
+<rect x="1100" y="205" width="420" height="110" rx="0" fill="#FCF5E9" stroke="#9B671D" stroke-width="2" stroke-dasharray="9 7"/>
+<text x="1310.0" y="231.0" fill="#9B671D" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">监督预训练</text>
+<text x="1310.0" y="265.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">策略头模仿高手走法</text>
+<text x="1310.0" y="294.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">价值头学习棋谱最终结果</text>
+<polyline points="500,260 590,260" fill="none" stroke="#9B671D" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="590,260 579.0,255.0 579.0,265.0" fill="#9B671D"/>
+<polyline points="1010,260 1100,260" fill="none" stroke="#9B671D" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="1100,260 1089.0,255.0 1089.0,265.0" fill="#9B671D"/>
+<polyline points="1310,315 1310,365 290,365 290,460" fill="none" stroke="#9B671D" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="10 7"/>
+<polygon points="290,460 295.0,449.0 285.0,449.0" fill="#9B671D"/>
+<text x="800" y="345" fill="#9B671D" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">以预训练权重作为自对弈起点</text>
+<text x="590" y="421" fill="#137C75" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="start" dominant-baseline="central">已实现 · 搜索指导的自对弈强化学习</text>
+<rect x="80" y="460" width="420" height="116" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="290.0" y="489.0" fill="#137C75" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">① 策略—价值网络</text>
+<text x="290.0" y="523.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">输出策略先验 p 与局面价值 v</text>
+<text x="290.0" y="552.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">当前支持从随机权重开始</text>
+<rect x="590" y="460" width="420" height="116" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="800.0" y="489.0" fill="#137C75" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">② MCTS 搜索</text>
+<text x="800.0" y="523.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">多次模拟并更新访问次数</text>
+<text x="800.0" y="552.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">得到搜索分布 π，选择落子</text>
+<rect x="1100" y="460" width="420" height="116" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1310.0" y="489.0" fill="#137C75" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">③ 自对弈</text>
+<text x="1310.0" y="523.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">同一网络轮流执红、执黑</text>
+<text x="1310.0" y="552.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">逐步记录局面，直到结束 / 截断</text>
+<rect x="1100" y="667" width="420" height="116" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1310.0" y="696.0" fill="#137C75" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">④ 构造样本（s, π, z）</text>
+<text x="1310.0" y="730.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">s：局面；π：归一化访问次数</text>
+<text x="1310.0" y="759.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">z：从当前落子方视角标注结果</text>
+<rect x="590" y="667" width="420" height="116" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="800.0" y="696.0" fill="#137C75" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">⑤ 经验回放池</text>
+<text x="800.0" y="730.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">汇集不同对局的训练样本</text>
+<text x="800.0" y="759.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">随机打乱，以小批量训练</text>
+<rect x="80" y="667" width="420" height="116" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="290.0" y="696.0" fill="#137C75" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">⑥ 联合优化网络</text>
+<text x="290.0" y="730.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">策略交叉熵 + 0.5 × 价值均方误差</text>
+<text x="290.0" y="759.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">− 0.01 × 策略熵；Adam 更新</text>
+<polyline points="500,518 590,518" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="590,518 579.0,513.0 579.0,523.0" fill="#137C75"/>
+<polyline points="1010,518 1100,518" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1100,518 1089.0,513.0 1089.0,523.0" fill="#137C75"/>
+<polyline points="1310,576 1310,667" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1310,667 1315.0,656.0 1305.0,656.0" fill="#137C75"/>
+<polyline points="1100,725 1010,725" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1010,725 1021.0,730.0 1021.0,720.0" fill="#137C75"/>
+<polyline points="590,725 500,725" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="500,725 511.0,730.0 511.0,720.0" fill="#137C75"/>
+<polyline points="290,667 290,576" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="290,576 285.0,587.0 295.0,587.0" fill="#137C75"/>
+<text x="320" y="620" fill="#137C75" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">更新权重</text>
+<text x="800" y="620" fill="#566A75" font-size="23" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">训练 → 新网络 → 新对局 → 新样本</text>
+<polyline points="70,843 1530,843" fill="none" stroke="#D8E1E6" stroke-width="1" stroke-linejoin="round"/>
+<text x="70" y="870" fill="#566A75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">z：获胜 +1、失败 −1、和棋 0；当前代码将达到最大步数的截断对局也记为 0。依据：train.py / ai.py / mcts.py。</text>
+</svg>

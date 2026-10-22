@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3200" height="1800" viewBox="0 0 1600 900" role="img">
+<title>中国象棋 · 策略—价值网络架构</title><desc>深度学习部分｜默认 64 通道、6 个残差块｜尺寸省略批量维度 B</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text x="68" y="64" fill="#172D3A" font-size="42" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="start" dominant-baseline="central">中国象棋 · 策略—价值网络架构</text>
+<text x="70" y="116" fill="#566A75" font-size="22" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">深度学习部分｜默认 64 通道、6 个残差块｜尺寸省略批量维度 B</text>
+<rect x="70" y="178" width="420" height="120" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="280.0" y="209.0" fill="#137C75" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">棋盘输入 · 15 × 10 × 9</text>
+<text x="280.0" y="243.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">红方 7 层 + 黑方 7 层</text>
+<text x="280.0" y="272.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">当前走方 1 层</text>
+<rect x="570" y="178" width="420" height="120" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="780.0" y="209.0" fill="#137C75" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">初始卷积 · 3×3，15 → 64</text>
+<text x="780.0" y="243.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">BatchNorm + ReLU</text>
+<text x="780.0" y="272.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">输出：64 × 10 × 9</text>
+<rect x="1070" y="178" width="460" height="120" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1300.0" y="209.0" fill="#137C75" font-size="25" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">残差主干 · ResidualBlock × 6</text>
+<text x="1300.0" y="243.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">每块两次 3×3 卷积，含跳跃连接</text>
+<text x="1300.0" y="272.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">输出：64 × 10 × 9</text>
+<polyline points="490,238 570,238" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="570,238 559.0,233.0 559.0,243.0" fill="#137C75"/>
+<polyline points="990,238 1070,238" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1070,238 1059.0,233.0 1059.0,243.0" fill="#137C75"/>
+<polyline points="1300,298 1300,345 435,345 435,397" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="435,397 440.0,386.0 430.0,386.0" fill="#137C75"/>
+<polyline points="1175,345 1175,397" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1175,397 1180.0,386.0 1170.0,386.0" fill="#137C75"/>
+<text x="780" y="371" fill="#566A75" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">共享棋盘特征 → 两个输出分支</text>
+<rect x="90" y="397" width="690" height="98" rx="14" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="435.0" y="431.5" fill="#285AA8" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">策略头 · 1×1 卷积，64 → 16</text>
+<text x="435.0" y="465.5" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">BatchNorm + ReLU → 16 × 10 × 9</text>
+<rect x="90" y="535" width="690" height="92" rx="14" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="435.0" y="566.5" fill="#285AA8" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">展平 + 全连接</text>
+<text x="435.0" y="600.5" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">1440 → 8100</text>
+<rect x="90" y="667" width="690" height="92" rx="14" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="435.0" y="698.5" fill="#285AA8" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">策略输出 · 8100 个动作分数（logits）</text>
+<text x="435.0" y="732.5" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">90 个起点 × 90 个终点</text>
+<polyline points="435,495 435,535" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="435,535 440.0,524.0 430.0,524.0" fill="#285AA8"/>
+<polyline points="435,627 435,667" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="435,667 440.0,656.0 430.0,656.0" fill="#285AA8"/>
+<text x="435" y="799" fill="#285AA8" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">搜索阶段：过滤非法动作 + Softmax → 先验概率 p</text>
+<rect x="850" y="397" width="650" height="98" rx="14" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1175.0" y="431.5" fill="#7751A7" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">价值头 · 1×1 卷积，64 → 8</text>
+<text x="1175.0" y="465.5" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">BatchNorm + ReLU → 8 × 10 × 9</text>
+<rect x="850" y="535" width="650" height="92" rx="14" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1175.0" y="566.5" fill="#7751A7" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">展平 + 全连接</text>
+<text x="1175.0" y="600.5" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">720 → 64，接 ReLU</text>
+<rect x="850" y="667" width="650" height="92" rx="14" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1175.0" y="698.5" fill="#7751A7" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">全连接 64 → 1，接 Tanh</text>
+<text x="1175.0" y="732.5" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">价值输出：v ∈ [−1, 1]</text>
+<polyline points="1175,495 1175,535" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1175,535 1180.0,524.0 1170.0,524.0" fill="#7751A7"/>
+<polyline points="1175,627 1175,667" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1175,667 1180.0,656.0 1170.0,656.0" fill="#7751A7"/>
+<text x="1175" y="799" fill="#7751A7" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">当前落子方视角：预测最终胜负得分</text>
+<polyline points="70,843 1530,843" fill="none" stroke="#D8E1E6" stroke-width="1" stroke-linejoin="round"/>
+<text x="70" y="870" fill="#566A75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">依据：net.py / encoder.py / mcts.py。策略先验 p 和局面价值 v 共同指导 MCTS 搜索。</text>
+</svg>

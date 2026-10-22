@@ -1,0 +1,4 @@
+include .python-version uv.lock README.md
+include *.bat *.ps1
+include test_game.py test_smoke.py
+recursive-include tests *.py

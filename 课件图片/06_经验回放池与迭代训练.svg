@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3200" height="1800" viewBox="0 0 1600 900" role="img">
+<title>经验回放池 · 从一局棋到多轮网络更新</title><desc>当前实现：按时间保留最近样本；每轮收集新对局后，打乱整个池并进行小批量训练</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text x="68" y="64" fill="#172D3A" font-size="42" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="start" dominant-baseline="central">经验回放池 · 从一局棋到多轮网络更新</text>
+<text x="70" y="116" fill="#566A75" font-size="22" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">当前实现：按时间保留最近样本；每轮收集新对局后，打乱整个池并进行小批量训练</text>
+<rect x="70" y="192" width="420" height="114" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="280.0" y="220.0" fill="#137C75" font-size="25" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">① 当前网络自对弈</text>
+<text x="280.0" y="254.0" fill="#172D3A" font-size="19" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">根节点加噪声，增加探索</text>
+<text x="280.0" y="283.0" fill="#172D3A" font-size="19" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">前 10 步采样，之后选访问最多的走法</text>
+<rect x="590" y="192" width="420" height="114" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="800.0" y="220.0" fill="#137C75" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">② 每步先保存（s, π）</text>
+<text x="800.0" y="254.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">s：落子前局面与当前走方</text>
+<text x="800.0" y="283.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">π：MCTS 访问次数归一化分布</text>
+<rect x="1110" y="192" width="420" height="114" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1320.0" y="220.0" fill="#137C75" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">③ 结束后补齐结果 z</text>
+<text x="1320.0" y="254.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">按每个局面的落子方标注胜负</text>
+<text x="1320.0" y="283.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">组成完整经验（s, π, z）</text>
+<polyline points="490,249 590,249" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="590,249 579.0,244.0 579.0,254.0" fill="#137C75"/>
+<polyline points="1010,249 1110,249" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1110,249 1099.0,244.0 1099.0,254.0" fill="#137C75"/>
+<text x="70" y="362" fill="#172D3A" font-size="25" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="start" dominant-baseline="central">回放池：默认最多 30,000 条“局面样本”，容量满时自动移除最旧样本</text>
+<polyline points="1320,306 1320,390 1365,390 1365,427" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1365,427 1370.0,416.0 1360.0,416.0" fill="#137C75"/>
+<rect x="100" y="427" width="250" height="96" rx="14" fill="#F3F6F8" stroke="#566A75" stroke-width="2"/>
+<text x="225.0" y="460.5" fill="#566A75" font-size="23" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">最旧样本</text>
+<text x="225.0" y="494.5" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">（s, π, z）</text>
+<rect x="385" y="427" width="250" height="96" rx="14" fill="#F3F6F8" stroke="#566A75" stroke-width="2"/>
+<text x="510.0" y="460.5" fill="#566A75" font-size="23" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">历史对局样本</text>
+<text x="510.0" y="494.5" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">（s, π, z）</text>
+<rect x="670" y="427" width="250" height="96" rx="14" fill="#F3F6F8" stroke="#566A75" stroke-width="2"/>
+<text x="795.0" y="460.5" fill="#566A75" font-size="23" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">历史对局样本</text>
+<text x="795.0" y="494.5" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">（s, π, z）</text>
+<rect x="955" y="427" width="250" height="96" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1080.0" y="460.5" fill="#137C75" font-size="23" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">本轮对局样本</text>
+<text x="1080.0" y="494.5" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">（s, π, z）</text>
+<rect x="1240" y="427" width="250" height="96" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1365.0" y="460.5" fill="#137C75" font-size="23" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">最新样本</text>
+<text x="1365.0" y="494.5" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">（s, π, z）</text>
+<text x="800" y="565" fill="#566A75" font-size="23" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">混合新旧对局以减少相邻局面的相关性；复用已有搜索数据，提高样本利用率</text>
+<polyline points="800,523 800,542" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="800,542 805.0,531.0 795.0,531.0" fill="#137C75"/>
+<polyline points="800,586 800,610 280,610 280,656" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="280,656 285.0,645.0 275.0,645.0" fill="#137C75"/>
+<rect x="70" y="656" width="420" height="116" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="280.0" y="685.0" fill="#137C75" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">④ 打乱整个回放池</text>
+<text x="280.0" y="719.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">每个 epoch 重新打乱样本顺序</text>
+<text x="280.0" y="748.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">依次遍历全部小批量，默认 3 个 epoch</text>
+<rect x="590" y="656" width="420" height="116" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="800.0" y="685.0" fill="#137C75" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">⑤ 每批更新网络</text>
+<text x="800.0" y="719.0" fill="#172D3A" font-size="19" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">默认每批 128 条，Adam 学习率 0.001</text>
+<text x="800.0" y="748.0" fill="#172D3A" font-size="19" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">共同优化策略头、价值头和共享主干</text>
+<rect x="1110" y="656" width="420" height="116" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1320.0" y="685.0" fill="#137C75" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">⑥ 新网络开始下一轮</text>
+<text x="1320.0" y="719.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">使用更新后的参数生成新对局</text>
+<text x="1320.0" y="748.0" fill="#172D3A" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">新经验加入池，旧经验逐步淘汰</text>
+<polyline points="490,714 590,714" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="590,714 579.0,709.0 579.0,719.0" fill="#137C75"/>
+<polyline points="1010,714 1110,714" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1110,714 1099.0,709.0 1099.0,719.0" fill="#137C75"/>
+<polyline points="1530,714 1565,714 1565,155 280,155 280,192" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="280,192 285.0,181.0 275.0,181.0" fill="#137C75"/>
+<text x="800" y="813" fill="#566A75" font-size="22" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">回放池存在内存中，当前未保存到模型文件；结束程序后，池内经验不会自动恢复</text>
+<polyline points="70,843 1530,843" fill="none" stroke="#D8E1E6" stroke-width="1" stroke-linejoin="round"/>
+<text x="70" y="870" fill="#566A75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">依据：train.py。自对弈默认每轮 4 局、每步 600 次模拟；实际训练遍历整个池，不是优先经验回放。</text>
+</svg>

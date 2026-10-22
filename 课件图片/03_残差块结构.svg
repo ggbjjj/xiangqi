@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3200" height="1800" viewBox="0 0 1600 900" role="img">
+<title>中国象棋 · 残差块内部结构</title><desc>预激活残差块｜默认通道数 64｜主干连续堆叠 6 次</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text x="68" y="64" fill="#172D3A" font-size="42" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="start" dominant-baseline="central">中国象棋 · 残差块内部结构</text>
+<text x="70" y="116" fill="#566A75" font-size="22" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">预激活残差块｜默认通道数 64｜主干连续堆叠 6 次</text>
+<text x="800" y="198" fill="#137C75" font-size="26" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">恒等分支：直接传递输入 x</text>
+<polyline points="200,440 200,240 1320,240 1320,408" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1320,408 1325.0,397.0 1315.0,397.0" fill="#137C75"/>
+<text x="745" y="330" fill="#566A75" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">主分支 F(x)：两次归一化、激活与卷积</text>
+<rect x="50" y="390" width="120" height="100" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="110.0" y="440.0" fill="#137C75" font-size="25" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">输入 x</text>
+<rect x="240" y="390" width="120" height="100" rx="14" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="300.0" y="440.0" fill="#285AA8" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">BN</text>
+<rect x="395" y="390" width="120" height="100" rx="14" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="455.0" y="440.0" fill="#285AA8" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">ReLU</text>
+<rect x="550" y="390" width="150" height="100" rx="14" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="625.0" y="425.5" fill="#285AA8" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">3×3 卷积</text>
+<text x="625.0" y="459.5" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">64 → 64</text>
+<rect x="740" y="390" width="120" height="100" rx="14" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="800.0" y="440.0" fill="#285AA8" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">BN</text>
+<rect x="895" y="390" width="120" height="100" rx="14" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="955.0" y="440.0" fill="#285AA8" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">ReLU</text>
+<rect x="1050" y="390" width="150" height="100" rx="14" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="1125.0" y="425.5" fill="#285AA8" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">3×3 卷积</text>
+<text x="1125.0" y="459.5" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">64 → 64</text>
+<polyline points="170,440 240,440" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="240,440 229.0,435.0 229.0,445.0" fill="#285AA8"/>
+<polyline points="360,440 395,440" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="395,440 384.0,435.0 384.0,445.0" fill="#285AA8"/>
+<polyline points="515,440 550,440" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="550,440 539.0,435.0 539.0,445.0" fill="#285AA8"/>
+<polyline points="700,440 740,440" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="740,440 729.0,435.0 729.0,445.0" fill="#285AA8"/>
+<polyline points="860,440 895,440" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="895,440 884.0,435.0 884.0,445.0" fill="#285AA8"/>
+<polyline points="1015,440 1050,440" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1050,440 1039.0,435.0 1039.0,445.0" fill="#285AA8"/>
+<polyline points="1200,440 1288,440" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1288,440 1277.0,435.0 1277.0,445.0" fill="#285AA8"/>
+<circle cx="1320" cy="440" r="32" fill="white" stroke="#137C75" stroke-width="2"/>
+<text x="1320" y="437" fill="#137C75" font-size="40" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">+</text>
+<polyline points="1352,440 1410,440" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1410,440 1399.0,435.0 1399.0,445.0" fill="#137C75"/>
+<rect x="1410" y="390" width="140" height="100" rx="14" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1480.0" y="440.0" fill="#137C75" font-size="25" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">输出</text>
+<text x="1480" y="528" fill="#137C75" font-size="27" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">x + F(x)</text>
+<text x="800" y="638" fill="#172D3A" font-size="31" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">输入 / 输出尺寸保持：64 × 10 × 9</text>
+<text x="800" y="695" fill="#566A75" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">卷积核 3×3，步长 1，padding = 1；BN 和 ReLU 位于每次卷积之前</text>
+<text x="800" y="743" fill="#566A75" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">跳跃连接为信息和梯度提供直接通路；本项目相加后直接返回</text>
+<polyline points="70,843 1530,843" fill="none" stroke="#D8E1E6" stroke-width="1" stroke-linejoin="round"/>
+<text x="70" y="870" fill="#566A75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">依据：net.py 中 ResidualBlock.forward()。该残差块不改变棋盘的空间尺寸。</text>
+</svg>
