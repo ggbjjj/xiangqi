@@ -1,0 +1,100 @@
+{
+  "loss/train_micro": {
+    "count": 1558,
+    "first_step": 1559,
+    "last_step": 3116,
+    "last_value": 2.408933401107788,
+    "last_wall_time": 1792986913.8576243
+  },
+  "loss/train_batch": {
+    "count": 195,
+    "first_step": 196,
+    "last_step": 390,
+    "last_value": 2.730085611343384,
+    "last_wall_time": 1792986913.8836572
+  },
+  "optimization/grad_norm": {
+    "count": 195,
+    "first_step": 196,
+    "last_step": 390,
+    "last_value": 0.9086089730262756,
+    "last_wall_time": 1792986913.883761
+  },
+  "encoding/alpha": {
+    "count": 195,
+    "first_step": 196,
+    "last_step": 390,
+    "last_value": 0.9487907886505127,
+    "last_wall_time": 1792986913.8838174
+  },
+  "encoding/beta_1": {
+    "count": 195,
+    "first_step": 196,
+    "last_step": 390,
+    "last_value": 1.039730429649353,
+    "last_wall_time": 1792986913.8838506
+  },
+  "encoding/beta_2": {
+    "count": 195,
+    "first_step": 196,
+    "last_step": 390,
+    "last_value": 1.0229686498641968,
+    "last_wall_time": 1792986913.8839238
+  },
+  "encoding/beta_3": {
+    "count": 195,
+    "first_step": 196,
+    "last_step": 390,
+    "last_value": 1.0090951919555664,
+    "last_wall_time": 1792986913.8839421
+  },
+  "loss/train_epoch": {
+    "count": 1,
+    "first_step": 2,
+    "last_step": 2,
+    "last_value": 2.7852931022644043,
+    "last_wall_time": 1792986984.6514893
+  },
+  "loss/validation": {
+    "count": 1,
+    "first_step": 2,
+    "last_step": 2,
+    "last_value": 2.707429885864258,
+    "last_wall_time": 1792986984.6515448
+  },
+  "accuracy/validation_top1": {
+    "count": 1,
+    "first_step": 2,
+    "last_step": 2,
+    "last_value": 0.24800659716129303,
+    "last_wall_time": 1792986984.651556
+  },
+  "accuracy/validation_top3": {
+    "count": 1,
+    "first_step": 2,
+    "last_step": 2,
+    "last_value": 0.4337349534034729,
+    "last_wall_time": 1792986984.6515622
+  },
+  "test/loss": {
+    "count": 1,
+    "first_step": 2,
+    "last_step": 2,
+    "last_value": 2.7061564922332764,
+    "last_wall_time": 1792987053.0142431
+  },
+  "test/top1": {
+    "count": 1,
+    "first_step": 2,
+    "last_step": 2,
+    "last_value": 0.2442268580198288,
+    "last_wall_time": 1792987053.0142963
+  },
+  "test/top3": {
+    "count": 1,
+    "first_step": 2,
+    "last_step": 2,
+    "last_value": 0.4328191876411438,
+    "last_wall_time": 1792987053.0143063
+  }
+}

@@ -17,11 +17,7 @@ if errorlevel 1 (
     )
 )
 echo 正在启动中国象棋，首次运行需要安装环境，请稍候...
-if exist "model.pt" (
-    "%UV_EXE%" run --locked --no-dev --extra neural xiangqi %*
-) else (
-    "%UV_EXE%" run --locked --no-dev xiangqi %*
-)
+"%UV_EXE%" run --locked --no-dev --extra cpu xiangqi %*
 if errorlevel 1 (
     echo.
     echo 启动失败，请查看上方错误；首次运行请确认网络可用。

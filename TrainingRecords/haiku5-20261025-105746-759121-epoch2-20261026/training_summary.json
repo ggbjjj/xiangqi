@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "imported_at_utc": "2026-10-26T04:28:46.502739+00:00",
+  "source_directory": "D:\\模型参数信息",
+  "run_id": "haiku5-20261025-105746-759121",
+  "record_directory": "TrainingRecords/haiku5-20261025-105746-759121-epoch2-20261026",
+  "architecture": "Haiku-5",
+  "public_model_name": "HaiKu-5.1",
+  "checkpoint_id": "e2bbff5da4cb42a29484fd1d03a095cb",
+  "parent_checkpoint_id": "ddba0b0639364a4cbd663f51ab74d3d7",
+  "parent_epoch": 1,
+  "planned_total_epochs": 2,
+  "completed_and_saved_epoch": 2,
+  "run_status": "completed",
+  "next_epoch_to_train": 3,
+  "resume_continuity_verified": true,
+  "global_step_before_resume": 195,
+  "global_step_after_resume": 390,
+  "saved_micro_step": 3116,
+  "additional_epochs_completed": 1,
+  "final_test_evaluation_completed": true,
+  "metrics": {
+    "train_loss": 2.7852930589723344,
+    "validation": {
+      "loss": 2.7074298190678623,
+      "top1": 0.2480066036741719,
+      "top3": 0.43373493975903615,
+      "games": 1440,
+      "steps": 113876
+    }
+  },
+  "evaluation": {
+    "run_id": "haiku5-20261025-105746-759121",
+    "checkpoint_id": "e2bbff5da4cb42a29484fd1d03a095cb",
+    "smoke_only": false,
+    "test": {
+      "loss": 2.7061564063343106,
+      "top1": 0.24422685477644415,
+      "top3": 0.4328191900049133,
+      "games": 1403,
+      "steps": 113976
+    },
+    "metric_note": "棋谱动作命中率，并非对弈胜率；不使用测试集选择模型"
+  },
+  "original_training_config": {
+    "data": "/root/autodl-tmp/xiangqi/Data/dataset.sqlite3",
+    "model_db": "/root/autodl-tmp/xiangqi/ModelParameters/models.sqlite3",
+    "output": "/root/autodl-tmp/xiangqi/runs/resumed/20261026-003904-059919",
+    "T": 120,
+    "epochs": 2,
+    "batch_size": 128,
+    "micro_batch": 16,
+    "workers": 4,
+    "cpu_threads": 4,
+    "lr": 0.0003,
+    "weight_decay": 0.0001,
+    "clip_grad": 1.0,
+    "seed": 42,
+    "device": "cuda",
+    "precision": "bf16",
+    "no_recompute": false,
+    "resume": "ddba0b0639364a4cbd663f51ab74d3d7",
+    "evaluate": null,
+    "run_name": null,
+    "limit_games": 0,
+    "smoke": false,
+    "model": {
+      "architecture": "Haiku-5",
+      "version": 1,
+      "dim": 128,
+      "heads": 4,
+      "cores": 3,
+      "history_depth": 2,
+      "spatial_depth": 2,
+      "ffn_dim": 512,
+      "cnn_channels": 64,
+      "context_plies": 120,
+      "checkpoint_attention": true,
+      "encoding": "absolute-red-black-v1"
+    },
+    "dataset_fingerprint": "6bba446ad27faeda00b343f9ebf2c2d1f00bca19a481bd996e1d2314fbb3c82e",
+    "torch": "2.9.1+cu128",
+    "train_games": 24916,
+    "validation_games": 1440,
+    "test_games": 1403
+  },
+  "resume_origin": {
+    "source_record": "/root/autodl-tmp/xiangqi/TrainingRecords/current_resume.json",
+    "checkpoint_id": "ddba0b0639364a4cbd663f51ab74d3d7",
+    "completed_epoch_at_resume": 1,
+    "target_total_epochs": 2,
+    "source_history": "runs/haiku5-20261025-105746-759121/history.csv"
+  },
+  "checkpoint_created_at_utc": "2026-10-26T03:56:24.532Z",
+  "checkpoint_created_at_beijing": "2026-10-26T11:56:24.532000+08:00",
+  "parameter_count": 3043614,
+  "optimizer": "AdamW",
+  "optimizer_parameter_states": 266,
+  "optimizer_state_saved": true,
+  "torch_cpu_rng_state_saved": true,
+  "torch_cuda_rng_states_saved": 1,
+  "weights_sha256": "7a865370ced0325b5b43ffd61ab9d3c3f55b19c6e0b6bd363de9e3c6191fe665",
+  "training_state_sha256": "b979f23f943cd784935b5a89a52401f9bedf30b66da1f7f7099946f02cf1df73",
+  "source_database_sha256": "fe28a65c44725e0dcf381d71684cb6790b19f2954fedcbdb151b25dfb9abd3a5",
+  "active_database_sha256_after_import": "94493129d2f84152439bd8c56dd5ba2a8a150cf705d7d0f2b51c3835bb996e57",
+  "dataset_fingerprint": "6bba446ad27faeda00b343f9ebf2c2d1f00bca19a481bd996e1d2314fbb3c82e",
+  "dataset_matches_local_project": true,
+  "dataset_sizes": {
+    "train": 24916,
+    "validation": 1440,
+    "test": 1403
+  },
+  "old_project_database_backup": "backups/training-import-epoch2-20261026-042843-378125/models-before.sqlite3",
+  "previous_checkpoint_preserved_byte_for_byte": true,
+  "previous_public_bindings_preserved": true,
+  "run_files_copied": [
+    "runs/resumed/20261026-003904-059919/haiku5-20261025-105746-759121/config.json",
+    "runs/resumed/20261026-003904-059919/haiku5-20261025-105746-759121/evaluation.json",
+    "runs/resumed/20261026-003904-059919/haiku5-20261025-105746-759121/history.csv",
+    "runs/resumed/20261026-003904-059919/haiku5-20261025-105746-759121/history.png",
+    "runs/resumed/20261026-003904-059919/haiku5-20261025-105746-759121/resume_origin.json",
+    "runs/resumed/20261026-003904-059919/haiku5-20261025-105746-759121/tensorboard/events.out.tfevents.1792975144.autodl-container-20bc47a853-aa2fa711.1814.0"
+  ],
+  "run_files_already_identical": [
+    "runs/haiku5-20261025-054510-022133/config.json",
+    "runs/haiku5-20261025-054510-022133/tensorboard/events.out.tfevents.1792907111.autodl-container-20bc47a853-aa2fa711.1765.0",
+    "runs/haiku5-20261025-060615-442696/config.json",
+    "runs/haiku5-20261025-060615-442696/tensorboard/events.out.tfevents.1792908376.autodl-container-20bc47a853-aa2fa711.3508.0",
+    "runs/haiku5-20261025-105746-759121/config.json",
+    "runs/haiku5-20261025-105746-759121/history.csv",
+    "runs/haiku5-20261025-105746-759121/history.png"
+  ],
+  "run_file_conflicts_preserved": [
+    {
+      "path": "runs/haiku5-20261025-105746-759121/tensorboard/events.out.tfevents.1792925867.autodl-container-20bc47a853-aa2fa711.13795.0",
+      "policy": "kept_existing_project_file; new_copy_in_source_snapshot",
+      "kept_project_sha256": "884676fd0ce7e85c45caf5b6b53dfb578d7f0182a97fd98f28e9ffc691b71e69",
+      "incoming_sha256": "d49acaf31072fba91f4ebfb8fd54b92b52189230e4c387c98bcd0ac193fc9309",
+      "incoming_archive": "TrainingRecords/haiku5-20261025-105746-759121-epoch2-20261026/source/runs/haiku5-20261025-105746-759121/tensorboard/events.out.tfevents.1792925867.autodl-container-20bc47a853-aa2fa711.13795.0"
+    }
+  ],
+  "note": "第一轮参数和训练状态未改写，HaiKu-5保持第一轮。新增HaiKu-5.1绑定第二轮。旧日志有一份更长的新事件文件，保留项目旧文件，新文件完整归档在source。"
+}

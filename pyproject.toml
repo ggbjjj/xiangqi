@@ -4,32 +4,55 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xiangqi-desktop"
-version = "1.0.0"
+version = "2.0.0"
 description = "支持双人、人机和 AI 观战的中国象棋"
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
 dependencies = ["pygame-ce>=2.5,<3", "numpy>=1.26,<3"]
 
 [project.optional-dependencies]
-neural = ["torch>=2.6,<3"]
+cpu = ["torch==2.9.1", "tqdm>=4.67,<5", "tensorboard>=2.18,<3", "matplotlib>=3.9,<4"]
+gpu = ["torch==2.9.1", "tqdm>=4.67,<5", "tensorboard>=2.18,<3", "matplotlib>=3.9,<4"]
+# Backwards-compatible alias for existing local launch commands.
+neural = ["torch==2.9.1", "tqdm>=4.67,<5", "tensorboard>=2.18,<3", "matplotlib>=3.9,<4"]
+data = ["tqdm>=4.67,<5"]
 
 [project.scripts]
 xiangqi = "main:main"
 xiangqi-train = "train:main"
+xiangqi-import = "data_pipeline.import_records:main"
 
 [dependency-groups]
 dev = ["pytest>=8,<10"]
 
 [tool.setuptools]
-py-modules = ["main", "ui", "game", "board", "piece", "constants", "ai", "mcts", "net", "encoder", "train"]
+py-modules = ["main", "ui", "game", "board", "piece", "constants", "ai", "net", "encoder", "train", "project_paths", "model_store"]
+
+[tool.setuptools.packages.find]
+include = ["models*", "data_pipeline*", "training*", "selfplay*"]
+
+[tool.setuptools.package-data]
+training = ["*.html"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "test_game.py", "test_smoke.py"]
+
+[tool.uv]
+conflicts = [[{ extra = "cpu" }, { extra = "gpu" }, { extra = "neural" }]]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
 [tool.uv.sources]
-torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'win32' or sys_platform == 'linux'" }]
+torch = [
+    { index = "pytorch-cpu", extra = "cpu", marker = "sys_platform == 'win32' or sys_platform == 'linux'" },
+    { index = "pytorch-cpu", extra = "neural", marker = "sys_platform == 'win32' or sys_platform == 'linux'" },
+    { index = "pytorch-cu128", extra = "gpu" },
+]

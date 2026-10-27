@@ -1,0 +1,28 @@
+{
+  "verified_at_utc": "2026-10-25T14:35:17.409009+00:00",
+  "sqlite_integrity": "ok",
+  "source_files_verified": 12,
+  "source_files_unchanged": true,
+  "original_run_files_verified": true,
+  "active_database_unchanged_after_read_checks": true,
+  "checkpoints": [
+    {
+      "checkpoint_id": "ddba0b0639364a4cbd663f51ab74d3d7",
+      "epoch": 1,
+      "global_step": 195
+    }
+  ],
+  "public_models": [
+    {
+      "name": "HaiKu-5"
+    }
+  ],
+  "production_cpu_top3_legal": true,
+  "resume_weights_optimizer_and_dataset_preflight": "passed on CPU",
+  "project_tests": {
+    "passed": 75,
+    "failed": 0
+  },
+  "gpu_training_started_locally": false,
+  "final_test_set_evaluation": "not run; no new test metrics reported"
+}

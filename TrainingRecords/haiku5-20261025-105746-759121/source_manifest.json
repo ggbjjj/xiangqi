@@ -1,0 +1,65 @@
+{
+  "source_directory": "D:\\模型参数信息",
+  "files": [
+    {
+      "path": "ModelParameters/artifacts/perf-mb32/haiku5-20261025-101534-757813/config.json",
+      "bytes": 979,
+      "sha256": "40add75c9e84274e9db2c0c21740f90b8c131dd4f7311723c5b6d091f2f4a842"
+    },
+    {
+      "path": "ModelParameters/artifacts/perf-mb32/haiku5-20261025-101534-757813/tensorboard/events.out.tfevents.1792923335.autodl-container-20bc47a853-aa2fa711.12186.0",
+      "bytes": 88,
+      "sha256": "977a98ec45d621760301b42d3bfdfd987619d6f56a3dd7605998f83d57c611b2"
+    },
+    {
+      "path": "ModelParameters/models.sqlite3",
+      "bytes": 36892672,
+      "sha256": "b933c2f37d3375da69bfdc99d37c738fc0236a6621bb5bb28a1f2690b189220a"
+    },
+    {
+      "path": "ModelParameters/README.md",
+      "bytes": 907,
+      "sha256": "532996b2f50d860f546d62d6989174bb562522d727ad9a6236321da4627f30c4"
+    },
+    {
+      "path": "runs/haiku5-20261025-054510-022133/config.json",
+      "bytes": 1024,
+      "sha256": "f037865b0fc3be4da4d1af0aeb9c8de26390ac3b7ffd705e4956276de1f00e26"
+    },
+    {
+      "path": "runs/haiku5-20261025-054510-022133/tensorboard/events.out.tfevents.1792907111.autodl-container-20bc47a853-aa2fa711.1765.0",
+      "bytes": 17991,
+      "sha256": "12e5a46bab867310364780363a22501ffa31f4c7ea39842ec268c9ec9298f783"
+    },
+    {
+      "path": "runs/haiku5-20261025-060615-442696/config.json",
+      "bytes": 1024,
+      "sha256": "720f12026c80fa87fb26703392a4425d8a39427d31bc0d35a452d42a0d9cb79c"
+    },
+    {
+      "path": "runs/haiku5-20261025-060615-442696/tensorboard/events.out.tfevents.1792908376.autodl-container-20bc47a853-aa2fa711.3508.0",
+      "bytes": 212836,
+      "sha256": "6a0f8f68ac9945dde1be456743d8b8ccaddfd4bfdfb01e65a0f8cf2729f0f4cc"
+    },
+    {
+      "path": "runs/haiku5-20261025-105746-759121/config.json",
+      "bytes": 1024,
+      "sha256": "c57f889eda3b563e21318b1782ceb5339a0c77dc0c621178effccb5b1e03cba3"
+    },
+    {
+      "path": "runs/haiku5-20261025-105746-759121/history.csv",
+      "bytes": 194,
+      "sha256": "f2011e89fd88523c78490a0c5f1a4332ff9874935beea7bb06e2129123d8303f"
+    },
+    {
+      "path": "runs/haiku5-20261025-105746-759121/history.png",
+      "bytes": 38382,
+      "sha256": "5948b48be01ae95b7f2e52a98ebbb26fa37c0b158104e1cc3249fc9b8a00d32a"
+    },
+    {
+      "path": "runs/haiku5-20261025-105746-759121/tensorboard/events.out.tfevents.1792925867.autodl-container-20bc47a853-aa2fa711.13795.0",
+      "bytes": 153740,
+      "sha256": "884676fd0ce7e85c45caf5b6b53dfb578d7f0182a97fd98f28e9ffc691b71e69"
+    }
+  ]
+}

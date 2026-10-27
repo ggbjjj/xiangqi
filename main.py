@@ -4,6 +4,7 @@ import re
 import sys
 from ai import NeuralAI, SearchAI, load_network
 from game import Game
+from project_paths import MODEL_CATALOG as MODEL_DB
 
 
 def _parse_move(text):
@@ -19,9 +20,11 @@ def _parse_move(text):
     return move if move[1] < 9 and move[3] < 9 else None
 
 
-def _maybe_load_net(model_path, channels, blocks):
+def _maybe_load_net(model_path, model_name=None, *, family=None,parameter_id=None):
+    if family is not None:
+        return load_network(model_path,family=family,parameter_id=parameter_id)
     try:
-        return load_network(model_path, channels, blocks)
+        return load_network(model_path, model_name)
     except Exception as error:
         print(f'[提示] 模型不可用，使用内置 AI：{error}')
         return None
@@ -32,8 +35,9 @@ def cmd_gui(args):
     mode = args.mode
     if args.ai_color:
         mode = 'pve_black' if args.ai_color == 'r' else 'pve_red'
-    run_app(model_path=args.model, channels=args.channels, blocks=args.blocks,
-            sims=args.sims, initial_mode=mode, depth=args.depth)
+    options={}
+    if args.family is not None: options={'parameter_family':args.family,'parameter_id':args.parameter_id}
+    run_app(model_path=args.model_db, model_name=args.model, initial_mode=mode, depth=args.depth,**options)
 
 
 def cmd_cli(args):
@@ -42,10 +46,10 @@ def cmd_cli(args):
     ai = None
     player_color = None
     if mode != 'pvp':
-        net = _maybe_load_net(args.model, args.channels, args.blocks)
-        ai = (NeuralAI(net, num_simulations=args.sims) if net is not None
+        net = _maybe_load_net(args.model_db, args.model,family=args.family,parameter_id=args.parameter_id)
+        ai = (NeuralAI(net) if net is not None
               else SearchAI(max_depth=args.depth))
-        print('AI：' + ('神经网络搜索' if net is not None else '内置搜索'))
+        print('AI：' + (net.display_name if net is not None else '内置搜索'))
         if mode == 'pve':
             player_color = Game.opponent(args.ai_color)
     print('走法：60-50 / 6,0 5,0 / 6050；u 悔棋，q 退出')
@@ -53,7 +57,8 @@ def cmd_cli(args):
         print(game.board)
         side = '红' if game.turn == 'r' else '黑'
         if mode == 'ai' or (mode == 'pve' and game.turn != player_color):
-            move = ai.choose_move(game.board, game.turn)
+            kwargs = {'history':game.history} if isinstance(ai,NeuralAI) else {}
+            move = ai.choose_move(game.board, game.turn, **kwargs)
             if move is None:
                 game._evaluate_end()
                 break
@@ -91,10 +96,11 @@ def positive_int(value):
 
 
 def _add_ai_options(parser):
-    parser.add_argument('--model', default='model.pt', help='可选训练模型路径')
-    parser.add_argument('--sims', type=positive_int, default=50, help='神经网络搜索次数')
-    parser.add_argument('--channels', type=positive_int, default=64, help='旧模型通道数')
-    parser.add_argument('--blocks', type=int, default=6, help='旧模型残差块数')
+    parser.add_argument('--model-db', default=str(MODEL_DB), help='模型参数目录（汇总 HaiKu/Opus）或单个 SQLite 数据库')
+    parser.add_argument('--model', help='公开模型名称，例如 HaiKu-5；图形界面预选此模型，开局前确认')
+    parser.add_argument('--family',choices=['HaiKu','Opus'],help='按模型系列加载参数，未指定 ID 时使用该系列默认 ID')
+    parser.add_argument('--parameter-id','--id',dest='parameter_id',help='例如 ID2 或 2，需同时指定 --family')
+    parser.add_argument('--checkpoint', help='后台启动配置：与 --model 一起使用，将该名称绑定到参数 ID 并保存')
     parser.add_argument('--depth', type=int, choices=(1, 2, 3, 4), default=2,
                         help='内置 AI 搜索深度（每步限时）')
 
@@ -121,8 +127,25 @@ def main(argv=None):
             child.add_argument('--ai-color', choices=['r', 'b'], default='b')
         child.set_defaults(func=cmd_cli)
     args = parser.parse_args(argv)
-    if getattr(args, 'blocks', 0) < 0:
-        parser.error('--blocks 不得小于 0')
+    if getattr(args,'parameter_id',None) is not None and not getattr(args,'family',None):
+        parser.error('--id 需要 --family，以区分不同模型系列的编号')
+    if getattr(args,'family',None) is not None:
+        if args.model or args.checkpoint: parser.error('--family/--id 与公开名称 --model/--checkpoint 分别使用')
+        from model_store import get_parameter_config
+        try: args.parameter_id=get_parameter_config(args.family,args.parameter_id,path=args.model_db)['parameter_id']
+        except ValueError as error: parser.error(str(error))
+    if getattr(args,'model',None):
+        args.model = args.model.strip()
+    if getattr(args,'checkpoint',None):
+        if not args.model:
+            parser.error('--checkpoint 需要同时指定 --model 公开名称，例如 --model HaiKu-5 --checkpoint 参数ID')
+        from model_store import publish_model
+        import sqlite3
+        try:
+            publish_model(args.model,args.checkpoint,path=args.model_db)
+        except (ValueError,sqlite3.Error) as error:
+            parser.error(f'后台模型绑定失败：{error}')
+        print(f'[后台模型绑定] {args.model} -> {args.checkpoint}')
     try:
         args.func(args)
     except KeyboardInterrupt:

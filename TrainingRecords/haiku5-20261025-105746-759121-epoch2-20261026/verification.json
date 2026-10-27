@@ -1,0 +1,41 @@
+{
+  "verified_at_utc": "2026-10-26T04:32:50.354525+00:00",
+  "sqlite_integrity": "ok",
+  "source_files_verified": 18,
+  "source_directory_unchanged": true,
+  "old_archive_files_verified": 12,
+  "old_project_run_files_unchanged": true,
+  "old_checkpoint_and_optimizer_preserved_byte_for_byte": true,
+  "old_public_model_binding_unchanged": true,
+  "both_models_cpu_legal_top3": "passed with one move of history",
+  "current_resume_preflight": "passed for epoch 2; next epoch 3",
+  "historic_resume_preflight": "passed for epoch 1; next epoch 2",
+  "checkpoints": [
+    {
+      "checkpoint_id": "ddba0b0639364a4cbd663f51ab74d3d7",
+      "epoch": 1,
+      "global_step": 195,
+      "sha256": "9d87b64c448c0d018546f5d25a3a71a53f460a6fef56c85a2b4eb56bc902b9a8"
+    },
+    {
+      "checkpoint_id": "e2bbff5da4cb42a29484fd1d03a095cb",
+      "epoch": 2,
+      "global_step": 390,
+      "sha256": "7a865370ced0325b5b43ffd61ab9d3c3f55b19c6e0b6bd363de9e3c6191fe665"
+    }
+  ],
+  "public_models": [
+    {
+      "name": "HaiKu-5"
+    },
+    {
+      "name": "HaiKu-5.1"
+    }
+  ],
+  "targeted_model_and_resume_tests": {
+    "passed": 11,
+    "failed": 0
+  },
+  "third_epoch_training_started": false,
+  "test_set_re_evaluated_locally": false
+}

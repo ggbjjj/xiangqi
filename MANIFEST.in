@@ -1,4 +1,12 @@
 include .python-version uv.lock README.md
+include 指令.md
 include *.bat *.ps1
+include requirements-training.txt
+include resume_train.py
+include tools/export_training.py
+include TrainingRecords/current_resume.json
+recursive-include TrainingRecords *.md
+recursive-include docs *.md
+recursive-include training *.html
 include test_game.py test_smoke.py
 recursive-include tests *.py

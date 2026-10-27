@@ -1,0 +1,17 @@
+{
+  "database": "D:\\象棋\\Data\\dataset.sqlite3",
+  "raw_records": 61857,
+  "status": {
+    "excluded_category": 4783,
+    "pending_decoder": 3389,
+    "rejected": 78,
+    "validated": 53607
+  },
+  "games": 27759,
+  "splits": {
+    "test": 1403,
+    "train": 24916,
+    "validation": 1440
+  },
+  "plies": 2392304
+}

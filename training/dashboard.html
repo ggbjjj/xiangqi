@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>象棋 · 训练曲线与评优</title>
+<style>
+:root{font-family:"Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;color:#1c3045;background:#f2f5f9;font-size:14px}
+*{box-sizing:border-box}body{margin:0}main{max-width:1560px;margin:auto;padding:30px 34px 48px}
+header{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:25px}h1{font-size:25px;margin:0 0 8px;font-weight:650}p{margin:0;color:#687b90;line-height:1.7}
+.live{border:1px solid #b6d8d0;color:#21776a;background:#edf9f5;border-radius:20px;padding:8px 13px;white-space:nowrap}.live:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:8px}
+.controls{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:22px}label{display:flex;align-items:center;gap:9px}select,button{font:inherit;color:inherit;border:1px solid #d5dee9;border-radius:7px;padding:9px 12px;background:white}select#run{min-width:280px;max-width:650px}button{cursor:pointer}input{accent-color:#3378be}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:22px}.card,.chart{background:#fff;border:1px solid #dfe6ef;border-radius:12px;box-shadow:0 3px 13px #1c304503}
+.card{padding:18px 23px}.card .value{font-size:27px;font-weight:600;margin-top:7px}.card small{font-size:12px;color:#78899b;margin-left:8px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}.chart{padding:21px 22px 15px;min-width:0}
+h2{font-size:16px;font-weight:600;margin:0 0 7px}.charthead{display:flex;align-items:start;justify-content:space-between;gap:10px}.charthead p{font-size:12px}
+.plot{height:300px;position:relative;margin-top:8px}canvas{width:100%;height:100%;display:block}.legend{display:flex;flex-wrap:wrap;gap:9px 17px;min-height:24px;margin:9px 0 2px;color:#53677e;font-size:12px}.legend label{gap:5px}.dot{display:inline-block;width:17px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.axis{font-size:12px;border-top:1px solid #edf1f6;padding-top:10px;color:#7c8da0}.note{margin-top:20px;padding:15px 18px;border-radius:8px;background:#e9eff7;color:#4e657d;font-size:12px}.tooltip{display:none;position:absolute;pointer-events:none;background:#20334cec;color:white;padding:10px 12px;border-radius:7px;font-size:12px;line-height:1.8;z-index:2;min-width:145px}
+#message{color:#8b6840;font-size:12px;margin-bottom:15px}#updated{font-size:12px}
+@media(max-width:950px){.grid{grid-template-columns:1fr}main{padding:22px 18px}.controls{gap:12px}.cards{gap:9px}.card{padding:15px}.card .value{font-size:23px}}
+</style></head>
+<body><main>
+<header><div><h1>训练曲线与评优</h1><p>查看实时损失、验证表现与参数更新进度</p></div><span class="live" id="status">正在连接</span></header>
+<div class="controls">
+<label>训练运行 <select id="run" aria-label="选择训练运行"><option value="">等待训练日志</option></select></label>
+<label>损失横轴 <select id="level" aria-label="损失横轴"><option value="segment">反向传播段次数</option><option value="micro">微批量次数</option><option value="logical">逻辑 Batch 次数</option></select></label>
+<label>平滑程度 <input id="smooth" aria-label="平滑程度" type="range" min="0" max="0.95" step="0.05" value="0"><span id="smoothValue">0.00</span></label>
+<span id="updated">每秒自动刷新</span></div>
+<div id="message" role="status"></div>
+<section class="cards">
+<div class="card"><p>已记录反传段数</p><div class="value" id="segments">—</div></div>
+<div class="card"><p>实际参数更新次数</p><div class="value" id="updates">—</div></div>
+<div class="card"><p>本次最佳参数</p><div class="value" id="best">—</div></div>
+</section>
+<div class="grid">
+<section class="chart"><div class="charthead"><div><h2>实时训练损失</h2><p>不同分项可通过图例开关；默认展示原始曲线</p></div></div><div class="legend" id="lossLegend"></div><div class="plot"><canvas id="loss" role="img" aria-label="实时训练损失曲线"></canvas><div class="tooltip"></div></div><p class="axis" id="lossAxis">横轴：反向传播段次数　纵轴：损失值</p></section>
+<section class="chart"><h2>古谱训练与验证损失</h2><p>最佳参数按本次运行中最低的完整验证损失选择</p><div class="legend"><span><i class="dot" style="background:#347bbf"></i>训练集交叉熵</span><span><i class="dot" style="background:#d18340"></i>验证集交叉熵</span></div><div class="plot"><canvas id="validation" role="img" aria-label="古谱训练与验证损失曲线"></canvas><div class="tooltip"></div></div><p class="axis">横轴：训练轮次　纵轴：合法动作交叉熵</p></section>
+<section class="chart"><h2>验证集动作命中率</h2><p>衡量对古谱动作的预测，不代表对弈胜率</p><div class="legend"><span><i class="dot" style="background:#288b7c"></i>首选动作命中率</span><span><i class="dot" style="background:#8071bf"></i>前三动作命中率</span></div><div class="plot"><canvas id="accuracy" role="img" aria-label="验证集动作命中率曲线"></canvas><div class="tooltip"></div></div><p class="axis">横轴：训练轮次　纵轴：动作命中率（%）</p></section>
+<section class="chart"><h2>参数更新进度</h2><p>整个逻辑 Batch 完成后，优化器才更新一次参数</p><div class="legend"><span><i class="dot" style="background:#347bbf"></i>累计实际更新次数</span></div><div class="plot"><canvas id="optimizer" role="img" aria-label="参数更新次数曲线"></canvas><div class="tooltip"></div></div><p class="axis">横轴：逻辑 Batch 次数　纵轴：累计参数更新次数</p></section>
+</div>
+<p class="note">默认每 16 个时间步反传一次并截断历史梯度，记录一个损失点；这不等于更新一次参数。验证曲线每轮记录一次。平滑只影响显示；评优始终使用未平滑的完整验证集结果。未开启古谱验证时不产生最佳参数；PPO 损失不能用来判定棋力。训练停止后，已记录的曲线仍可查看。</p>
+</main><script>
+'use strict';
+const byId=id=>document.getElementById(id);
+const colors=['#347bbf','#288b7c','#d18340','#8071bf','#a66b91'];
+const names={total:'总损失',book:'棋谱策略损失',ppo:'PPO 策略损失',value:'价值损失',entropy:'策略熵 H'};
+const axes={segment:'反向传播段次数',micro:'微批量次数',logical:'逻辑 Batch 次数'};
+let series={},selected='',running=false,activeKeys=new Set(['total','book','ppo','value']);
+function last(tag){const points=series[tag]||[];return points.length?points[points.length-1][1]:null}
+function number(value){if(value===null)return '—';return Number.isInteger(value)?value.toLocaleString('zh-CN'):value.toFixed(3)}
+function rows(tag,scale=1){return (series[tag]||[]).map(p=>[p[0],p[1]*scale])}
+function smooth(points){const alpha=Number(byId('smooth').value);let previous=null;return points.map(p=>{previous=previous===null?p[1]:alpha*previous+(1-alpha)*p[1];return [p[0],previous]})}
+function draw(id,lines,xlabel,ylabel){
+ const canvas=byId(id),rect=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+ canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);
+ const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+ const w=rect.width,h=rect.height,left=72,right=w-20,top=24,bottom=h-48;
+ ctx.font='12px "Microsoft YaHei",sans-serif';ctx.fillStyle='#75879a';ctx.textAlign='center';
+ const all=lines.flatMap(line=>line.points),hasData=all.length>0;
+ let xmin=hasData?Math.min(...all.map(p=>p[0])):0,xmax=hasData?Math.max(...all.map(p=>p[0])):1;
+ let ymin=hasData?Math.min(...all.map(p=>p[1])):0,ymax=hasData?Math.max(...all.map(p=>p[1])):1;
+ if(xmax===xmin){xmin=Math.max(0,xmin-1);xmax+=1}if(ymax===ymin){ymin-=Math.max(Math.abs(ymin)*.05,.1);ymax+=Math.max(Math.abs(ymax)*.05,.1)}
+ const pad=(ymax-ymin)*.12;ymin-=pad;ymax+=pad;
+ const X=x=>left+(x-xmin)/(xmax-xmin)*(right-left),Y=y=>bottom-(y-ymin)/(ymax-ymin)*(bottom-top);
+ ctx.lineWidth=1;
+ for(let i=0;i<=4;i++){
+  const y=top+i*(bottom-top)/4,v=ymax-i*(ymax-ymin)/4;
+  ctx.beginPath();ctx.strokeStyle='#e9eef5';ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();
+  ctx.textAlign='right';ctx.fillStyle='#8291a2';ctx.fillText(Math.abs(v)>=1000?v.toFixed(0):v.toFixed(2),left-10,y+4);
+  const x=left+i*(right-left)/4;ctx.textAlign='center';ctx.fillText((xmin+i*(xmax-xmin)/4).toFixed(xmax-xmin<4?1:0),x,bottom+21);
+ }
+ ctx.fillStyle='#526a83';ctx.font='12px "Microsoft YaHei",sans-serif';ctx.fillText(xlabel,(left+right)/2,h-7);
+ ctx.save();ctx.translate(16,(top+bottom)/2);ctx.rotate(-Math.PI/2);ctx.fillText(ylabel,0,0);ctx.restore();
+ if(!hasData){ctx.fillStyle='#94a3b4';ctx.fillText('等待此项训练数据',(left+right)/2,(top+bottom)/2)}
+ for(const line of lines){
+  ctx.strokeStyle=line.color;ctx.lineWidth=2;ctx.beginPath();
+  smooth(line.points).forEach((p,i)=>{if(i)ctx.lineTo(X(p[0]),Y(p[1]));else ctx.moveTo(X(p[0]),Y(p[1]))});ctx.stroke();
+  if(line.points.length===1){const p=line.points[0];ctx.fillStyle=line.color;ctx.beginPath();ctx.arc(X(p[0]),Y(p[1]),3,0,Math.PI*2);ctx.fill()}
+ }
+ const tooltip=canvas.nextElementSibling;
+ canvas.onmousemove=event=>{
+  if(!hasData)return;
+  const x=event.clientX-rect.left,value=xmin+(x-left)/(right-left)*(xmax-xmin);
+  tooltip.replaceChildren();let first=true;
+  for(const line of lines){if(!line.points.length)continue;const p=line.points.reduce((a,b)=>Math.abs(a[0]-value)<Math.abs(b[0]-value)?a:b);
+   if(first){const head=document.createElement('b');head.textContent=xlabel+'：'+p[0];tooltip.append(head,document.createElement('br'));first=false}
+   const item=document.createElement('div');item.textContent=line.name+'：'+p[1].toFixed(4);tooltip.append(item);
+  }
+  tooltip.style.display='block';tooltip.style.left=Math.max(0,Math.min(w-190,x+12))+'px';tooltip.style.top='32px';
+ };
+ canvas.onmouseleave=()=>{tooltip.style.display='none'};
+}
+function render(){
+ const level=byId('level').value,prefix='loss/'+level+'_';
+ byId('lossAxis').textContent='横轴：'+axes[level]+'　纵轴：损失值';
+ byId('smoothValue').textContent=Number(byId('smooth').value).toFixed(2);
+ const available=Object.keys(names).filter(key=>(series[prefix+key]||[]).length);
+ const legend=byId('lossLegend');legend.replaceChildren();
+ available.forEach((key,i)=>{const label=document.createElement('label'),box=document.createElement('input'),mark=document.createElement('i');
+  box.type='checkbox';box.checked=activeKeys.has(key);box.onchange=()=>{if(box.checked)activeKeys.add(key);else activeKeys.delete(key);render()};
+  mark.className='dot';mark.style.background=colors[Object.keys(names).indexOf(key)];
+  label.append(box,mark,document.createTextNode(names[key]));legend.append(label);
+ });
+ draw('loss',available.filter(key=>activeKeys.has(key)).map(key=>({name:names[key],color:colors[Object.keys(names).indexOf(key)],points:rows(prefix+key)})),axes[level],'损失值');
+ draw('validation',[{name:'训练集交叉熵',color:colors[0],points:rows('book_ce/train')},{name:'验证集交叉熵',color:colors[2],points:rows('book_ce/validation')}],'训练轮次','合法动作交叉熵');
+ draw('accuracy',[{name:'首选动作命中率',color:colors[1],points:rows('validation/top1',100)},{name:'前三动作命中率',color:colors[3],points:rows('validation/top3',100)}],'训练轮次','动作命中率（%）');
+ draw('optimizer',[{name:'累计实际更新次数',color:colors[0],points:rows('optimization/updates_after_batch')}],'逻辑 Batch 次数','累计参数更新次数');
+ const segments=series['loss/segment_total']||[];
+ byId('segments').textContent=segments.length?number(segments[segments.length-1][0]):'—';
+ byId('updates').textContent=number(last('optimization/updates_after_batch'));
+ const best=last('selection/best_parameter_id');byId('best').textContent=best===null?'尚无验证结果':'ID'+Math.round(best);
+}
+async function refresh(){
+ if(running)return;running=true;
+ try{
+  const response=await fetch('/api/runs',{cache:'no-store'});if(!response.ok)throw Error('读取运行列表失败');
+  const data=await response.json(),runs=data.runs;
+  if(JSON.stringify([...byId('run').options].map(o=>o.value))!==JSON.stringify(runs)){
+   byId('run').replaceChildren();for(const name of runs){const option=document.createElement('option');option.value=name;option.textContent=name;byId('run').append(option)}
+   if(!runs.includes(selected))selected=runs[runs.length-1]||'';byId('run').value=selected;
+  }
+  byId('message').textContent=runs.length?'':'还没有训练日志。启动训练后，此窗口会自动显示曲线。';
+  if(selected){const result=await fetch('/api/scalars?run='+encodeURIComponent(selected),{cache:'no-store'}),payload=await result.json();if(!result.ok)throw Error(payload.error);series=payload.series}
+  else series={};
+  render();byId('status').textContent='实时更新 · 每秒刷新';byId('updated').textContent='更新于 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});
+ }catch(error){byId('status').textContent='连接暂时中断，正在重试';byId('message').textContent=error.message}
+ finally{running=false}
+}
+byId('run').onchange=()=>{selected=byId('run').value;refresh()};
+byId('level').onchange=render;byId('smooth').oninput=render;
+window.addEventListener('resize',render);render();refresh();setInterval(refresh,1000);
+</script></body></html>

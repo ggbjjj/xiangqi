@@ -10,6 +10,8 @@ import pygame
 from ai import NeuralAI, SearchAI, load_network
 from constants import COLS, ROWS, NAMES_BLACK, NAMES_RED
 from game import Game
+from project_paths import MODEL_CATALOG as MODEL_DB
+from model_store import list_hint_models, load_hint_model, default_model_name, get_parameter_config
 
 CELL = 56
 MARGIN_X, MARGIN_Y = 40, 40
@@ -57,7 +59,7 @@ def text_fit(surface, text, face, color, rect, center=False):
 class MainMenu:
     MODES = list(MODE_LABELS.items())
 
-    def __init__(self, model_loaded=False, model_path='model.pt'):
+    def __init__(self, model_loaded=False, model_path=None):
         pygame.init()
         self.screen = pygame.display.set_mode((MENU_W, MENU_H))
         pygame.display.set_caption('中国象棋 · 选择模式')
@@ -92,19 +94,160 @@ class MainMenu:
             color = (128, 94, 57) if rect.collidepoint(pygame.mouse.get_pos()) else (94, 74, 51)
             pygame.draw.rect(self.screen, color, rect, border_radius=9)
             text_fit(self.screen, f'{i}   {label}', self.button_font, COLOR_LIGHT, rect, True)
-        status = '已启用训练模型' if self.model_loaded else '内置搜索 AI 已就绪 · 无需训练模型'
+        status = '人机对弈开局前选择模型'
         text_fit(self.screen, status, self.small_font, COLOR_GOLD, pygame.Rect(0, 494, MENU_W, 30), True)
         text_fit(self.screen, '红方先行 · 合法落点提示 · 支持悔棋', self.small_font,
                  COLOR_LIGHT, pygame.Rect(0, 532, MENU_W, 24), True)
         pygame.display.flip()
 
 
+class OpponentModelMenu:
+    """Select and load an opponent before a match; only public names are rendered."""
+
+    def __init__(self, mode, model_db=MODEL_DB, preferred_name=None,*,parameter_family=None,parameter_id=None):
+        pygame.init()
+        self.screen = pygame.display.set_mode((MENU_W,MENU_H))
+        pygame.display.set_caption('中国象棋 · 选择对弈模型')
+        self.clock = pygame.time.Clock()
+        self.title_font, self.button_font, self.small_font = font(32,True),font(22),font(16)
+        self.mode, self.model_db = mode,model_db
+        self.page, self.selected_name = 0,None
+        self.loading, self.result = False,None
+        self._results = queue.Queue()
+        self.message = '请选择模型，再点击开始对弈'
+        self._pinned=None
+        try:
+            if parameter_family is not None:
+                row=get_parameter_config(parameter_family,parameter_id,path=model_db)
+                preferred_name=row['version_name']
+                self._pinned=(preferred_name,parameter_family,row['parameter_id'])
+                self.choices=[{'name':preferred_name}]
+            else: self.choices = list_hint_models(model_db)
+        except Exception as error:
+            print(f'[对弈模型列表] {error}')
+            self.choices = []
+            self.message = '模型列表暂不可用，可稍后重试'
+        self.neural_names = {choice['name'] for choice in self.choices}
+        if preferred_name is None:
+            try: preferred_name = default_model_name(model_db)
+            except Exception: pass
+        if '内置搜索' not in self.neural_names:
+            self.choices = self.choices + [{'name':'内置搜索'}]
+        if preferred_name in {choice['name'] for choice in self.choices}:
+            self.selected_name = preferred_name
+            self.page = next(i for i,c in enumerate(self.choices) if c['name']==preferred_name)//5
+        elif preferred_name:
+            self.message = '指定模型暂不可用，请重新选择'
+        self.model_rects = []
+        self.back_rect, self.start_rect = pygame.Rect(34,532,130,40),pygame.Rect(340,532,186,40)
+        self.prev_rect, self.next_rect = pygame.Rect(34,455,110,30),pygame.Rect(416,455,110,30)
+
+    def _start(self):
+        if self.loading: return
+        if self.selected_name is None:
+            self.message = '请先选择对弈模型'
+            return
+        if self.selected_name not in self.neural_names:
+            self.result = ('start',None)
+            return
+        self.loading = True
+        self.message = '正在准备对弈…'
+        path,name,results = self.model_db,self.selected_name,self._results
+
+        def worker():
+            try:
+                if self._pinned and name==self._pinned[0]:
+                    net=load_network(path,family=self._pinned[1],parameter_id=self._pinned[2])
+                else: net = load_network(path,name)
+                if net is None: raise ValueError('所选模型不可用')
+                results.put((net,None))
+            except Exception as error:
+                print(f'[对弈模型加载] {error}')
+                results.put((None,'该模型暂不可用，请重试或重新选择'))
+        threading.Thread(target=worker,daemon=True,name='xiangqi-opponent-load').start()
+
+    def _poll_loading(self):
+        if self.result is not None: return
+        try: net,error = self._results.get_nowait()
+        except queue.Empty: return
+        self.loading = False
+        if error:
+            self.message = error
+        else:
+            self.result = ('start',net)
+
+    def _on_click(self, pos):
+        if self.back_rect.collidepoint(pos):
+            self.result = ('back',None)
+            return
+        if self.loading: return
+        if self.start_rect.collidepoint(pos):
+            self._start()
+        elif self.prev_rect.collidepoint(pos):
+            self.page = max(0,self.page-1)
+        elif self.next_rect.collidepoint(pos):
+            self.page = min((len(self.choices)-1)//5,self.page+1)
+        else:
+            for rect,choice in self.model_rects:
+                if rect.collidepoint(pos):
+                    self.selected_name = choice['name']
+                    self.message = '已选择模型，点击开始对弈'
+                    break
+
+    def run(self):
+        while self.result is None:
+            self._draw()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.result = ('quit',None)
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.result = ('back',None)
+                    elif event.key == pygame.K_RETURN:
+                        self._start()
+                    elif not self.loading and pygame.K_1 <= event.key <= pygame.K_5:
+                        index = self.page*5+event.key-pygame.K_1
+                        if index < len(self.choices): self.selected_name = self.choices[index]['name']
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    self._on_click(event.pos)
+                if self.result is not None: break
+            if self.result is None: self._poll_loading()
+            self.clock.tick(30)
+        return self.result
+
+    def _draw(self):
+        self.screen.fill(COLOR_DARK)
+        text_fit(self.screen,'选择对弈模型',self.title_font,COLOR_GOLD,pygame.Rect(20,25,520,45),True)
+        text_fit(self.screen,MODE_LABELS[self.mode],self.small_font,COLOR_LIGHT,pygame.Rect(20,78,520,25),True)
+        text_fit(self.screen,'本局固定使用所选模型，换模型请重新开局',self.small_font,
+                 COLOR_LIGHT,pygame.Rect(20,108,520,26),True)
+        self.model_rects = []
+        for i,choice in enumerate(self.choices[self.page*5:(self.page+1)*5]):
+            rect = pygame.Rect(34,150+i*60,492,50)
+            selected = choice['name']==self.selected_name
+            pygame.draw.rect(self.screen,COLOR_GOLD if selected else (94,74,51),rect,border_radius=7)
+            text_fit(self.screen,choice['name'],self.button_font,COLOR_DARK if selected else COLOR_LIGHT,rect,True)
+            self.model_rects.append((rect,choice))
+        for label,rect in [('上一页',self.prev_rect),('下一页',self.next_rect)]:
+            text_fit(self.screen,label,self.small_font,COLOR_LIGHT,rect,True)
+        text_fit(self.screen,f'{self.page+1} / {(len(self.choices)+4)//5}',self.small_font,
+                 COLOR_LIGHT,pygame.Rect(205,455,150,30),True)
+        text_fit(self.screen,self.message,self.small_font,COLOR_GOLD,pygame.Rect(34,494,492,26),True)
+        for label,rect in [('返回',self.back_rect),('准备中…' if self.loading else '开始对弈',self.start_rect)]:
+            enabled = rect==self.back_rect or (self.selected_name is not None and not self.loading)
+            pygame.draw.rect(self.screen,COLOR_GOLD if enabled else (94,74,51),rect,border_radius=7)
+            text_fit(self.screen,label,self.button_font,COLOR_DARK if enabled else COLOR_LIGHT,rect,True)
+        pygame.display.flip()
+
+
 class XiangqiUI:
-    def __init__(self, mode, net=None, num_simulations=50, depth=2):
+    def __init__(self, mode, net=None, num_simulations=50, depth=2, model_db=MODEL_DB):
         if mode not in MODE_LABELS:
             raise ValueError(f'unknown mode: {mode}')
         pygame.init()
         self.mode, self.net = mode, net
+        self._match_net = net
+        self.opponent_name = getattr(net,'display_name','AI 模型') if net is not None else '内置搜索'
         self.num_simulations, self.depth = num_simulations, depth
         self.player_color = {'pve_red': 'r', 'pve_black': 'b'}.get(mode)
         self.ai_color = Game.opponent(self.player_color) if self.player_color else None
@@ -119,11 +262,22 @@ class XiangqiUI:
         self.paused = False
         self.running = False
         self.exit_to_menu = False
+        self.restart_requested, self.ai_failed = False,False
         self._generation = 0
         self._cancel_event = None
         self._results = queue.Queue()
         self.thinking = False
         self._ai_due = 0
+        self.model_db = model_db
+        self.hint_rect = pygame.Rect(542,322,204,38)
+        self.hints, self.hint_rows = [], []
+        self.hint_model_name = ''
+        self.hint_busy, self.model_dialog = False, False
+        self.model_choices, self.model_rects = [], []
+        self.model_page = 0
+        self.dialog_message = ''
+        self._hint_generation, self._hint_cancel = 0, None
+        self._hint_results = queue.Queue()
         self.buttons = [('新局', self.action_new), ('悔棋', self.action_undo),
                         ('暂停/继续', self.action_pause), ('返回菜单', self.action_back),
                         ('退出', self.action_quit)]
@@ -131,19 +285,86 @@ class XiangqiUI:
                           for i, (label, _) in enumerate(self.buttons)]
 
     def _make_ai(self):
-        if self.net is not None:
-            return NeuralAI(self.net, num_simulations=self.num_simulations)
+        if self._match_net is not None:
+            return NeuralAI(self._match_net)
         return SearchAI(max_depth=self.depth)
 
     def _is_ai_turn(self):
         return self.ai is not None and (self.mode == 'ai_vs_ai' or self.game.turn == self.ai_color)
 
     def _invalidate_ai(self):
+        self._invalidate_hints()
         self._generation += 1
         if self._cancel_event is not None:
             self._cancel_event.set()
         self._cancel_event = None
         self.thinking = False
+
+    def _invalidate_hints(self):
+        self._hint_generation += 1
+        if self._hint_cancel is not None:
+            self._hint_cancel.set()
+        self._hint_cancel = None
+        self.hint_busy = False
+        self.hints, self.hint_rows = [], []
+        self.model_dialog = False
+
+    def action_hint(self):
+        if self.game.is_over() or self._is_ai_turn() or self.mode == 'ai_vs_ai':
+            self.message = '请在玩家走棋时使用 AI 提示'
+            return
+        self._invalidate_hints()
+        self.model_dialog, self.model_page = True, 0
+        try:
+            self.model_choices = list_hint_models(self.model_db)
+            self.dialog_message = '' if self.model_choices else '请稍后重试。'
+        except Exception as error:
+            self.model_choices = []
+            self.dialog_message = '模型列表暂不可用，请稍后重试。'
+            print(f'[模型库] {error}')
+
+    def _start_hint(self, choice):
+        self.model_dialog = False
+        self.hint_busy = True
+        token = self._hint_generation
+        board,turn,history = self.game.board.clone(),self.game.turn,list(self.game.history)
+        cancel = self._hint_cancel = threading.Event()
+        path,results = self.model_db,self._hint_results
+        name = choice['name']
+        self.message = f'{name} 正在分析历史局面…'
+
+        def worker():
+            try:
+                import torch
+                torch.set_num_threads(min(4,torch.get_num_threads()))
+                net = load_hint_model(name,path=path)
+                ranked = NeuralAI(net).rank_moves(board,turn,history=history,cancel_event=cancel)
+                results.put((token,turn,ranked,name,None))
+            except CancelledError:
+                pass
+            except ImportError as error:
+                print(f'[AI 提示] {error}')
+                results.put((token,turn,[],None,'AI 提示暂不可用，请稍后重试。'))
+            except Exception as error:
+                print(f'[AI 提示] {error}')
+                results.put((token,turn,[],None,'模型暂不可用，请稍后重试或选择其他模型。'))
+        threading.Thread(target=worker,daemon=True,name='xiangqi-hint').start()
+
+    def _poll_hints(self):
+        while True:
+            try: token,turn,ranked,name,error = self._hint_results.get_nowait()
+            except queue.Empty: break
+            if token != self._hint_generation or turn != self.game.turn: continue
+            self.hint_busy, self._hint_cancel = False,None
+            if error:
+                self.message = error
+            else:
+                legal = set(self.game.all_legal_moves())
+                if any(move not in legal for move,_ in ranked):
+                    self.message = '提示局面已变化，请重新分析'
+                    continue
+                self.hints, self.hint_model_name = ranked,name
+                self.message = f'{name}：已显示概率最高的 {len(ranked)} 个合法走法，点击查看落点'
 
     def _clear_selection(self):
         self.selected, self.legal_targets = None, []
@@ -158,10 +379,14 @@ class XiangqiUI:
         self._clear_selection()
         self.last_move = None
         self.paused = False
+        self.ai_failed = False
         if self.ai:
             self.ai = self._make_ai()
         self.message = '新局开始，红方先行'
         self._ai_due = pygame.time.get_ticks() + 300
+        if self.mode != 'pvp':
+            self.restart_requested = True
+            self.running = False
 
     def action_undo(self):
         self._invalidate_ai()
@@ -170,12 +395,19 @@ class XiangqiUI:
         self._refresh_last_move()
         if self.ai:
             self.ai = self._make_ai()
+        self.ai_failed = False
         if self.mode == 'ai_vs_ai':
             self.paused = True
         self.message = f'已悔棋 {count} 步' if count else '暂无可撤销的走子'
         self._ai_due = pygame.time.get_ticks() + 300
 
     def action_pause(self):
+        if self.ai_failed:
+            self._invalidate_ai()
+            self.ai, self.ai_failed, self.paused = self._make_ai(),False,False
+            self.message = f'正在重试 {self.opponent_name}…'
+            self._ai_due = pygame.time.get_ticks() + 150
+            return
         if self.mode != 'ai_vs_ai':
             self.message = '暂停功能用于 AI 观战'
             return
@@ -201,8 +433,9 @@ class XiangqiUI:
                     elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         self._on_click(event.pos)
                     elif event.type == pygame.KEYDOWN:
-                        action = {pygame.K_ESCAPE: self.action_back, pygame.K_b: self.action_back,
+                        action = {pygame.K_ESCAPE: self._escape, pygame.K_b: self.action_back,
                                   pygame.K_u: self.action_undo, pygame.K_n: self.action_new,
+                                  pygame.K_h: self.action_hint,
                                   pygame.K_SPACE: self.action_pause}.get(event.key)
                         if action:
                             action()
@@ -211,8 +444,9 @@ class XiangqiUI:
                 if not self.running:
                     break
                 self._poll_ai()
+                self._poll_hints()
                 if (self._is_ai_turn() and not self.game.is_over() and not self.paused
-                        and not self.thinking and pygame.time.get_ticks() >= self._ai_due):
+                        and not self.ai_failed and not self.thinking and pygame.time.get_ticks() >= self._ai_due):
                     self._ai_move()
                 self._draw()
                 self.clock.tick(30)
@@ -221,17 +455,19 @@ class XiangqiUI:
         return self.exit_to_menu
 
     def _ai_move(self):
-        if self.thinking or self.paused or self.game.is_over() or not self._is_ai_turn():
+        if self.thinking or self.paused or self.ai_failed or self.game.is_over() or not self._is_ai_turn():
             return
         self.thinking = True
         token, board, turn = self._generation, self.game.board.clone(), self.game.turn
+        history = list(self.game.history)
         cancel = self._cancel_event = threading.Event()
         ai, results = self.ai, self._results
         self.message = f'{"红" if turn == "r" else "黑"}方 AI 思考中…'
 
         def worker():
             try:
-                move = ai.choose_move(board, turn, cancel_event=cancel)
+                kwargs = {'history':history} if isinstance(ai,NeuralAI) else {}
+                move = ai.choose_move(board, turn, cancel_event=cancel, **kwargs)
                 results.put((token, turn, move, None))
             except CancelledError:
                 pass
@@ -251,22 +487,22 @@ class XiangqiUI:
             self.thinking = False
             self._cancel_event = None
             if error:
-                self.ai = SearchAI(max_depth=self.depth)
-                self.message = 'AI 计算异常，已切换内置搜索'
+                self.ai_failed = True
+                self.message = 'AI 计算失败，请点击“重试AI”或返回菜单'
                 print(f'[AI] {error}')
-                self._ai_due = pygame.time.get_ticks() + 800
             elif move is None:
                 self.game._evaluate_end()
                 if not self.game.is_over():
-                    self.ai = SearchAI(max_depth=self.depth)
-                self.message = self.game.status or 'AI 未返回走法，正在重试'
+                    self.ai_failed = True
+                self.message = self.game.status or 'AI 未返回走法，请点击“重试AI”'
             elif self.game.move(*move) == 'ok':
                 self._after_move()
             else:
-                self.ai = SearchAI(max_depth=self.depth)
-                self.message = 'AI 返回非法走法，已切换内置搜索'
+                self.ai_failed = True
+                self.message = 'AI 未能完成走棋，请点击“重试AI”或返回菜单'
 
     def _after_move(self):
+        self._invalidate_hints()
         self._clear_selection()
         self._refresh_last_move()
         side = '红' if self.game.turn == 'r' else '黑'
@@ -275,12 +511,31 @@ class XiangqiUI:
         self._ai_due = pygame.time.get_ticks() + (500 if self.mode == 'ai_vs_ai' else 150)
 
     def _on_click(self, pos):
+        if self.model_dialog:
+            if pygame.Rect(570,140,70,34).collidepoint(pos):
+                self.model_dialog = False
+            elif pygame.Rect(132,560,100,34).collidepoint(pos):
+                self.model_page = max(0,self.model_page-1)
+            elif pygame.Rect(528,560,100,34).collidepoint(pos):
+                self.model_page = min(max(0,(len(self.model_choices)-1)//5),self.model_page+1)
+            else:
+                for rect,choice in self.model_rects:
+                    if rect.collidepoint(pos): self._start_hint(choice); break
+            return
         for rect, label in self.btn_rects:
             if rect.collidepoint(pos):
                 dict(self.buttons)[label]()
                 return
+        if self.hint_rect.collidepoint(pos):
+            self.action_hint()
+            return
         if self.game.is_over() or self._is_ai_turn() or self.mode == 'ai_vs_ai':
             return
+        for rect,move in self.hint_rows:
+            if rect.collidepoint(pos):
+                self.selected, self.legal_targets = move[:2],[move[2:]]
+                self.message = '已标出建议走法，点击棋盘落点确认走子'
+                return
         square = pixel_to_board(*pos)
         if square is None:
             return
@@ -347,39 +602,90 @@ class XiangqiUI:
         for rect, label in self.btn_rects:
             color = (210, 173, 119) if rect.collidepoint(pygame.mouse.get_pos()) else (221, 187, 138)
             pygame.draw.rect(self.screen, color, rect, border_radius=6)
-            text_fit(self.screen, label, self.button_font, COLOR_DARK, rect, True)
+            shown_label = '重试AI' if label=='暂停/继续' and self.ai_failed else label
+            text_fit(self.screen, shown_label, self.button_font, COLOR_DARK, rect, True)
+        if self.model_dialog:
+            self._draw_model_dialog()
         pygame.display.flip()
+
+    def _escape(self):
+        if self.model_dialog:
+            self.model_dialog = False
+        else:
+            self.action_back()
+
+    def _draw_model_dialog(self):
+        shade = pygame.Surface((GAME_W,GAME_H),pygame.SRCALPHA)
+        shade.fill((0,0,0,145)); self.screen.blit(shade,(0,0))
+        pygame.draw.rect(self.screen,COLOR_LIGHT,(110,124,540,490),border_radius=12)
+        text_fit(self.screen,'选择提示模型',self.button_font,COLOR_DARK,pygame.Rect(132,145,400,28))
+        text_fit(self.screen,'关闭',self.small_font,COLOR_RED,pygame.Rect(570,143,70,30),True)
+        self.model_rects = []
+        if not self.model_choices:
+            text_fit(self.screen,'暂无可用模型',self.button_font,COLOR_DARK,pygame.Rect(132,210,490,35))
+            text_fit(self.screen,self.dialog_message,self.small_font,COLOR_LINE,pygame.Rect(132,260,490,35))
+        for i,choice in enumerate(self.model_choices[self.model_page*5:(self.model_page+1)*5]):
+            rect = pygame.Rect(132,196+i*69,496,60)
+            pygame.draw.rect(self.screen,(232,214,180),rect,border_radius=6)
+            text_fit(self.screen,choice['name'],self.button_font,COLOR_DARK,rect,True)
+            self.model_rects.append((rect,choice))
+        for label,rect in [('上一页',pygame.Rect(132,560,100,34)),('下一页',pygame.Rect(528,560,100,34))]:
+            text_fit(self.screen,label,self.small_font,COLOR_DARK,rect,True)
+        text_fit(self.screen,f'{self.model_page+1} / {max(1,(len(self.model_choices)+4)//5)}',
+                 self.small_font,COLOR_DARK,pygame.Rect(310,560,140,34),True)
 
     def _draw_sidebar(self):
         pygame.draw.rect(self.screen, (229, 199, 155), (BOARD_W, INFO_H, GAME_W - BOARD_W, BOARD_H))
         lines = ['对局信息', '红先 · 将死 / 困毙判负',
                  '选棋子，再点击绿色落点', '',
-                 'U  悔棋      N  新局', 'B / Esc  返回菜单', '空格  暂停 / 继续观战', '',
-                 'AI：' + ('未启用' if self.ai is None else '训练模型' if isinstance(self.ai, NeuralAI) else '内置搜索'),
-                 '状态：' + ('已结束' if self.game.is_over() else '暂停' if self.paused else '思考中' if self.thinking else '进行中'),
-                 '', '最近走子']
+                 'U  悔棋      N  新局', 'B / Esc  返回菜单', 'H  AI 提示 · 先选择模型',
+                 'AI：' + ('未启用' if self.ai is None else self.opponent_name),
+                 '状态：' + ('已结束' if self.game.is_over() else '待重试' if self.ai_failed else '暂停' if self.paused else '思考中' if self.thinking else '进行中'),
+                 '']
         for i, line in enumerate(lines):
             text_fit(self.screen, line, self.small_font, COLOR_DARK, pygame.Rect(542, 92 + i * 26, 206, 24))
-        for i, step in enumerate(self.game.history[-7:]):
+        pygame.draw.rect(self.screen,COLOR_GOLD,self.hint_rect,border_radius=6)
+        text_fit(self.screen,'分析中…' if self.hint_busy else 'AI 提示 · 选择模型',self.button_font,COLOR_DARK,self.hint_rect,True)
+        self.hint_rows = []
+        if self.hints:
+            text_fit(self.screen,f'{self.hint_model_name} · 合法动作 Top 3',self.small_font,COLOR_DARK,pygame.Rect(542,368,206,24))
+            for i,(move,prob) in enumerate(self.hints):
+                rect = pygame.Rect(540,399+i*49,208,43)
+                pygame.draw.rect(self.screen,COLOR_LIGHT,rect,border_radius=5)
+                label = f'{i+1}. {move[0]}{move[1]} → {move[2]}{move[3]}   {prob:.1%}'
+                text_fit(self.screen,label,self.small_font,COLOR_DARK,rect,True)
+                self.hint_rows.append((rect,move))
+            text_fit(self.screen,'概率是走法倾向，不是胜率',self.small_font,COLOR_LINE,pygame.Rect(542,550,206,24))
+        else:
+            text_fit(self.screen,'最近走子',self.small_font,COLOR_DARK,pygame.Rect(542,378,206,24))
+        for i, step in enumerate(self.game.history[-(2 if self.hints else 7):]):
             name = (NAMES_RED if step['turn'] == 'r' else NAMES_BLACK)[step['piece'][1]]
             label = f'{"红" if step["turn"] == "r" else "黑"}{name} {step["fr"]}{step["fc"]} → {step["tr"]}{step["tc"]}'
-            text_fit(self.screen, label, self.small_font, COLOR_LINE, pygame.Rect(542, 414 + i * 28, 206, 24))
+            text_fit(self.screen, label, self.small_font, COLOR_LINE, pygame.Rect(542, (590 if self.hints else 414) + i * 28, 206, 24))
 
 
-def run_app(model_path='model.pt', channels=64, blocks=6, sims=50, initial_mode=None, depth=2):
-    net = None
-    try:
-        net = load_network(model_path, channels, blocks)
-    except Exception as error:
-        print(f'[提示] 模型加载失败，使用内置搜索 AI：{error}')
-    mode = initial_mode
+def run_app(model_path=MODEL_DB, model_name=None, initial_mode=None, depth=2,*,parameter_family=None,parameter_id=None):
+    mode,preferred_name = initial_mode,model_name
     try:
         while True:
             if mode is None:
-                mode = MainMenu(net is not None, model_path).run()
+                mode = MainMenu(model_path=model_path).run()
             if mode is None:
                 break
-            if not XiangqiUI(mode, net, sims, depth).run():
+            net = None
+            if mode != 'pvp':
+                options={} if parameter_family is None else {'parameter_family':parameter_family,'parameter_id':parameter_id}
+                selection = OpponentModelMenu(mode,model_path,preferred_name,**options)
+                action,net = selection.run()
+                if action == 'quit': break
+                if action == 'back':
+                    mode = None
+                    continue
+                preferred_name = selection.selected_name
+            app = XiangqiUI(mode,net,depth=depth,model_db=model_path)
+            back_to_menu = app.run()
+            if app.restart_requested: continue
+            if not back_to_menu:
                 break
             mode = None
     finally:

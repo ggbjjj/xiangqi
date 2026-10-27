@@ -1,0 +1,53 @@
+{
+  "legacy_file": "D:\\象棋\\ModelParameters\\models.sqlite3",
+  "legacy_file_sha256": "94493129d2f84152439bd8c56dd5ba2a8a150cf705d7d0f2b51c3835bb996e57",
+  "legacy_preserved": true,
+  "weights_and_optimizer_blobs_identical": true,
+  "versions": [
+    {
+      "checkpoint_id": "e2bbff5da4cb42a29484fd1d03a095cb",
+      "architecture": "Haiku-5",
+      "run_id": "haiku5-20261025-105746-759121",
+      "stage": "pretrain",
+      "epoch": 2,
+      "global_step": 390,
+      "metrics_json": "{\"train_loss\": 2.7852930589723344, \"validation\": {\"loss\": 2.7074298190678623, \"top1\": 0.2480066036741719, \"top3\": 0.43373493975903615, \"games\": 1440, \"steps\": 113876}}",
+      "published": 1,
+      "created_at": "2026-10-26T03:56:24.532Z",
+      "version_name": "HaiKu-5.1",
+      "description": "HaiKu-5.1：保留原正式训练权重、优化器与训练进度；从集中参数库迁移，权重未改写。",
+      "is_default": true,
+      "model_db": "D:\\象棋\\ModelParameters\\HaiKu\\models.sqlite3"
+    },
+    {
+      "checkpoint_id": "ddba0b0639364a4cbd663f51ab74d3d7",
+      "architecture": "Haiku-5",
+      "run_id": "haiku5-20261025-105746-759121",
+      "stage": "pretrain",
+      "epoch": 1,
+      "global_step": 195,
+      "metrics_json": "{\"train_loss\": 2.9864080019494796, \"validation\": {\"loss\": 2.8537419603992227, \"top1\": 0.20702342899293968, \"top3\": 0.39196143173276193, \"games\": 1440, \"steps\": 113876}}",
+      "published": 1,
+      "created_at": "2026-10-25T14:15:45.609Z",
+      "version_name": "HaiKu-5",
+      "description": "HaiKu-5：保留原正式训练权重、优化器与训练进度；从集中参数库迁移，权重未改写。",
+      "is_default": false,
+      "model_db": "D:\\象棋\\ModelParameters\\HaiKu\\models.sqlite3"
+    },
+    {
+      "checkpoint_id": "0bcc739ab33b4eeaa3dc656936ac6e86",
+      "architecture": "Opus-5",
+      "run_id": "opus-initial",
+      "stage": "initial",
+      "epoch": 0,
+      "global_step": 0,
+      "metrics_json": "{\"initialized_only\": true, \"seed\": 42}",
+      "published": 0,
+      "created_at": "2026-10-27T05:07:33.032Z",
+      "version_name": "Opus-5.initial",
+      "description": "Opus-5 初始化参数，尚未训练；种子 42",
+      "is_default": true,
+      "model_db": "D:\\象棋\\ModelParameters\\Opus\\models.sqlite3"
+    }
+  ]
+}

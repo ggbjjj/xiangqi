@@ -1,4 +1,4 @@
-"""AI 封装：网络 + MCTS，对外暴露 choose_move。"""
+"""AI 封装：内置搜索与 Haiku-5 历史策略推理。"""
 
 from concurrent.futures import CancelledError
 from time import monotonic
@@ -90,75 +90,73 @@ class SearchAI:
         return chosen
 
 
-def load_network(model_path, channels=64, blocks=6):
-    """按 checkpoint 元数据加载；基本游戏不导入 PyTorch。"""
+def load_network(model_path=None, model_name=None, *, family=None,parameter_id=None):
+    """Resolve a public model name through the backend. Basic gameplay needs no torch."""
     from pathlib import Path
-    if not model_path or not Path(model_path).is_file():
+    from project_paths import MODEL_CATALOG
+    from model_store import list_hint_models, load_hint_model, default_model_name
+    path = Path(model_path or MODEL_CATALOG)
+    if parameter_id is not None and family is None: raise ValueError('按 ID 加载需要指定模型系列 family')
+    if family is not None:
+        from model_store import load_parameter_model
+        net,meta,_=load_parameter_model(family,parameter_id,path=path)
+        net.parameter_id=meta['parameter_id']; net.checkpoint_id=meta['checkpoint_id']
+        net.completed_epochs=meta['completed_epochs']
+        return net
+    if not path.exists():
         return None
+    if model_name is None:
+        choices = list_hint_models(path)
+        if not choices: return None
+        model_name = default_model_name(path) or choices[0]['name']
     import torch
-    from net import PolicyValueNet
-    checkpoint = torch.load(model_path, map_location='cpu', weights_only=True)
-    config = checkpoint.get('config', {}) if isinstance(checkpoint, dict) else {}
-    net = PolicyValueNet(channels=config.get('channels', channels),
-                         num_blocks=config.get('num_blocks', blocks))
-    net.load_state_dict(checkpoint.get('model', checkpoint))
-    net.eval()
-    torch.set_num_threads(min(4, torch.get_num_threads()))
-    return net
+    torch.set_num_threads(min(4,torch.get_num_threads()))
+    return load_hint_model(model_name,path=path)
 
 
 class NeuralAI:
-    """AlphaZero 风格 AI：每次决策用 MCTS 跑若干模拟，从访问分布选走法。
-
-    Args:
-        net:                PolicyValueNet
-        device:             'cpu' / 'cuda'
-        num_simulations:    每步 MCTS 模拟数
-        temperature:        默认采样温度（0=贪心）
-        temperature_moves:  前 N 手用温度，之后贪心
-        add_noise:          根节点是否加 Dirichlet 噪声
-    """
-
-    def __init__(self, net, device='cpu', num_simulations=200,
-                 temperature=0.0, temperature_moves=0, add_noise=False):
-        self.net = net
-        self.device = device
-        self.num_simulations = num_simulations
-        self.temperature = temperature
-        self.temperature_moves = temperature_moves
-        self.add_noise = add_noise
-        self._moves_played = 0
-
-    def choose_move(self, board, turn, return_diag=False, cancel_event=None):
-        """返回 (fr, fc, tr, tc) 或 None；若 return_diag=True 同时返回诊断信息。"""
-        from mcts import MCTS
-        mcts = MCTS(self.net, device=self.device,
-                    num_simulations=self.num_simulations,
-                    add_noise_at_root=self.add_noise, cancel_event=cancel_event)
-        root, _ = mcts.run(board.clone(), turn)
-
-        temp = self.temperature if self._moves_played < self.temperature_moves else 0.0
-        action, distribution = mcts.select_move(root, temperature=temp)
-        import numpy as np
-        self.last_policy = np.zeros(NUM_SQUARES * NUM_SQUARES, dtype=np.float32)
-        if distribution is not None:
-            self.last_policy[list(root.children)] = distribution
-        self._moves_played += 1
-
-        if action is None:
-            return (None, None) if return_diag else None
-        move = self._action_to_move(action)
-        if return_diag:
-            diag = mcts.diagnose(root)
-            diag.insert(0, {'root_visits': root.N})
-            return move, diag
-        return move
-
-    @staticmethod
-    def _action_to_move(action):
-        to_sq = action % NUM_SQUARES
-        from_sq = action // NUM_SQUARES
-        return from_sq // COLS, from_sq % COLS, to_sq // COLS, to_sq % COLS
+    """Direct legal policy inference. History is replayed with per-layer K/V caches."""
+    def __init__(self, net, device='cpu'):
+        self.net, self.device = net, device
+        self.net.to(device).eval()
+        self.reset()
 
     def reset(self):
-        self._moves_played = 0
+        self._keys, self._cache, self._logits = [], None, None
+
+    def rank_moves(self, board, turn, history=None, topk=3, cancel_event=None):
+        import torch
+        from board import Board
+        from encoder import encode_state, legal_action_mask, action_to_move
+        from models.HaiKu.loss import masked_probabilities
+        positions = [(Board(h['board_state']),h['prev_turn']) for h in (history or [])]+[(board,turn)]
+        keys = [(b.signature(),color) for b,color in positions]
+        if keys[:len(self._keys)] != self._keys:
+            self.reset()
+        with torch.inference_mode():
+            for b,color in positions[len(self._keys):]:
+                if cancel_event is not None and cancel_event.is_set():
+                    self.reset()
+                    raise CancelledError()
+                x = torch.from_numpy(encode_state(b,color))[None].to(self.device)
+                try:
+                    output,self._cache = self.net.forward_step(x,self._cache)
+                    self._logits = getattr(output,'policy_logits',output)
+                except Exception:
+                    self.reset()
+                    raise
+                self._keys.append((b.signature(),color))
+            self._keys = keys
+            mask = torch.from_numpy(legal_action_mask(board,turn))[None].to(self.device)
+            count = int(mask.sum())
+            if count == 0: return []
+            probs = masked_probabilities(self._logits,mask)[0]
+            # Top-k is restricted to legal IDs even if valid probabilities underflow to 0.
+            ids = mask[0].nonzero().flatten()
+            order = torch.argsort(probs[ids],descending=True,stable=True)[:min(topk,count)]
+            if cancel_event is not None and cancel_event.is_set(): raise CancelledError()
+            return [(action_to_move(int(ids[i])),float(probs[ids[i]])) for i in order]
+
+    def choose_move(self, board, turn, cancel_event=None, history=None):
+        ranked = self.rank_moves(board,turn,history=history,topk=1,cancel_event=cancel_event)
+        return ranked[0][0] if ranked else None
