@@ -49,6 +49,8 @@ uv sync --locked --python 3.12 --extra gpu
 uv run --locked --extra gpu python tools/check_training_env.py
 ```
 
+普通依赖的默认清华镜像与 4 路并发下载已写入 pyproject.toml，PyTorch 仍按模型环境选择官方 CPU/CUDA 12.8 索引；uv.lock 同步提交。因此首次 clone 和后续 pull 都不需要手动换源或删除锁文件，直接执行 `uv sync --locked --python 3.12 --extra gpu`。若本终端仍保留之前手动设置的 UV_DEFAULT_INDEX/UV_CONCURRENT_DOWNLOADS，可先执行一次 `unset UV_DEFAULT_INDEX UV_CONCURRENT_DOWNLOADS`；新终端直接使用项目配置。
+
 私有仓库需使用自己已配置的 GitHub 认证方式；也可使用本地相同的 SSH 443 仓库地址。Git clone 完成后还没有训练数据库和权重，这些文件需要单独上传到下列位置：
 
 ```text

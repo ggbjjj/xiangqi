@@ -47,6 +47,8 @@ AutoDL 的当前训练、生成、参数 ID 查询、默认 ID 设置和中断�
 
 GitHub 仅同步代码、依赖与说明，数据集、模型参数、自弈经验、训练日志和 exports 回传包单独传输。首次 clone 后需另外上传所需 SQLite 文件；训练后可用 tools/export_training.py 打包对应模型参数与本次日志。上传清单、AutoDL 拉取代码和结果取回步骤见 [GitHub与AutoDL同步](docs/GitHub与AutoDL同步.md)。
 
+依赖下载默认使用项目内配置的清华 PyPI 镜像，并发下载为 4；PyTorch 保留官方 CPU/CUDA 12.8 专用源。pyproject.toml 与 uv.lock 同步提交，AutoDL 拉取后直接执行 `uv sync --locked --python 3.12 --extra gpu` 即可。
+
 `python -m training.dashboard --logdir runs --port 6006` 启动中文实时曲线窗口：浏览器访问 `http://127.0.0.1:6006/`，查看损失、独立古谱验证指标和最佳参数 ID。默认每 16 步反传记录一个点，整个逻辑 Batch 结束才更新参数；古谱验证损失最低者记为本次 best，各轮参数仍保留。
 
 共用的棋谱/PPO/价值/熵损失、指定模型版本的自弈生成器，以及按模型系列分库的自弈数据，见 [混合训练与自弈接口](docs/混合训练与自弈接口.md)。原棋谱训练入口也使用共用损失接口。

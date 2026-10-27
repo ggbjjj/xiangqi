@@ -39,6 +39,14 @@ testpaths = ["tests", "test_game.py", "test_smoke.py"]
 
 [tool.uv]
 conflicts = [[{ extra = "cpu" }, { extra = "gpu" }, { extra = "neural" }]]
+concurrent-downloads = 4
+
+# Ordinary packages (including NVIDIA runtime dependencies) use the mirror.
+# Torch stays pinned to the explicit CPU / CUDA indexes below.
+[[tool.uv.index]]
+name = "tuna"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
