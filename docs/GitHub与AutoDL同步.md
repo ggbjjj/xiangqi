@@ -52,7 +52,7 @@ uv sync --locked --python 3.12 --extra gpu
 uv run --locked --extra gpu python tools/check_training_env.py
 ```
 
-普通依赖和 NVIDIA CUDA 运行库的阿里云镜像、2 路并发下载已写入 pyproject.toml，uv.lock 也已同步锁定实际下载地址。首次 clone 和后续 pull 后直接执行 `uv sync --locked --python 3.12 --extra gpu`，不需要每次设置镜像或运行 `uv lock`。PyTorch 本体按模型环境选择官方 CPU/CUDA 12.8 索引。以上路径按服务器实际目录替换，例如当前服务器使用 `/hy-tmp/xiangqi`；旧环境首次升级的处理见下文。
+普通依赖和 NVIDIA CUDA 运行库的阿里云镜像、2 路并发下载已写入 pyproject.toml，uv.lock 也已同步锁定实际下载地址。首次 clone 和后续 pull 后直接执行 `uv sync --locked --python 3.12 --extra gpu`，不需要每次设置镜像或运行 `uv lock`。GPU 版 PyTorch 本体单独使用南京大学 CUDA 12.8 镜像，CPU 版仍使用官方 CPU 索引。以上路径按服务器实际目录替换，例如当前服务器使用 `/hy-tmp/xiangqi`；旧环境首次升级的处理见下文。
 
 私有仓库需使用自己已配置的 GitHub 认证方式；也可使用本地相同的 SSH 443 仓库地址。Git clone 完成后还没有训练数据库和权重，这些文件需要单独上传到下列位置：
 
@@ -127,10 +127,12 @@ uv sync --locked --python 3.12 --extra gpu
 |---|---|
 | NVIDIA CUDA 运行库：cuBLAS、cuDNN、NCCL、cuFFT、cuSPARSE 等全部 `nvidia-*` 依赖 | 阿里云 PyPI 镜像 `https://mirrors.aliyun.com/pypi/simple/` |
 | NumPy、TensorBoard、Matplotlib、Triton 等其他普通依赖 | 同一阿里云 PyPI 镜像 |
-| GPU 版 `torch==2.9.1+cu128` 本体 | PyTorch 官方 CUDA 12.8 索引 |
+| GPU 版 `torch==2.9.1+cu128` 本体 | 南京大学 PyTorch 镜像 `https://mirrors.nju.edu.cn/pytorch/whl/cu128` |
 | 本地 CPU 版 `torch==2.9.1+cpu` 本体 | PyTorch 官方 CPU 索引 |
 
 并发下载固定为 2。NVIDIA 依赖使用阿里云返回的 wheel 文件地址；镜像可能使用自己的 CDN，实际下载主机以 `uv.lock` 的 URL 为准。已经完整缓存的包可以复用，不需要删除 `.venv` 或清空缓存。
+
+`pytorch-cu128` 设置为 `explicit = true`，仅供 `gpu` extra 的 `torch` 使用，不接管 NVIDIA 或其他依赖。锁文件同时保存南京大学镜像中的 Torch wheel 地址及与原官方文件一致的 SHA-256；PyTorch 版本和 CUDA 构建仍为 `2.9.1+cu128`。推送及拉取时必须包含 `pyproject.toml` 和 `uv.lock`，只改配置文件无法切换 `--locked` 使用的实际安装包地址。
 
 ### 旧服务器首次升级
 
@@ -159,7 +161,7 @@ uv sync --locked --python 3.12 --extra gpu
 uv run --locked --extra gpu python -m training.dashboard --logdir runs --host 127.0.0.1 --port 6006
 ```
 
-参考：[uv 索引与优先级](https://docs.astral.sh/uv/concepts/indexes/)、[uv 锁文件与安装](https://docs.astral.sh/uv/concepts/projects/sync/)、[阿里云 PyPI 镜像](https://developer.aliyun.com/mirror/pypi)。
+参考：[uv 索引与优先级](https://docs.astral.sh/uv/concepts/indexes/)、[uv 锁文件与安装](https://docs.astral.sh/uv/concepts/projects/sync/)、[阿里云 PyPI 镜像](https://developer.aliyun.com/mirror/pypi)、[南京大学 PyTorch 镜像说明](https://help.mirror.nju.edu.cn/pytorch/)。
 
 ## 训练结束后给我哪些数据
 

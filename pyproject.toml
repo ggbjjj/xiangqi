@@ -42,7 +42,8 @@ conflicts = [[{ extra = "cpu" }, { extra = "gpu" }, { extra = "neural" }]]
 concurrent-downloads = 2
 
 # Ordinary packages and all transitive NVIDIA CUDA runtime dependencies use Aliyun.
-# Torch stays pinned to the explicit CPU / CUDA indexes below.
+# Only GPU Torch uses the NJU CUDA mirror; CPU Torch keeps its official index.
+# These indexes are explicit so NVIDIA and other dependencies stay on Aliyun.
 [[tool.uv.index]]
 name = "aliyun"
 url = "https://mirrors.aliyun.com/pypi/simple/"
@@ -55,7 +56,7 @@ explicit = true
 
 [[tool.uv.index]]
 name = "pytorch-cu128"
-url = "https://download.pytorch.org/whl/cu128"
+url = "https://mirrors.nju.edu.cn/pytorch/whl/cu128"
 explicit = true
 
 [tool.uv.sources]

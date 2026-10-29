@@ -49,7 +49,7 @@ AutoDL 的当前训练、生成、参数 ID 查询、默认 ID 设置和中断�
 
 GitHub 仅同步代码、依赖与说明，数据集、模型参数、自弈经验、训练日志和 exports 回传包单独传输。首次 clone 后需另外上传所需 SQLite 文件；训练后可用 tools/export_training.py 打包对应模型参数与本次日志。上传清单、AutoDL 拉取代码和结果取回步骤见 [GitHub与AutoDL同步](docs/GitHub与AutoDL同步.md)。
 
-普通依赖和 NVIDIA CUDA 运行库（包括 cuBLAS、cuDNN、NCCL 等）默认使用项目内配置的阿里云 PyPI 镜像，并发下载为 2；PyTorch 保留官方 CPU/CUDA 12.8 专用源。pyproject.toml 与 uv.lock 同步提交，服务器拉取后直接执行 `uv sync --locked --python 3.12 --extra gpu` 即可，无需每次设置镜像环境变量。
+普通依赖和 NVIDIA CUDA 运行库（包括 cuBLAS、cuDNN、NCCL 等）默认使用项目内配置的阿里云 PyPI 镜像，并发下载为 2；GPU 版 PyTorch 单独使用南京大学 CUDA 12.8 镜像，CPU 版保留官方源。pyproject.toml 与 uv.lock 同步提交，服务器拉取后直接执行 `uv sync --locked --python 3.12 --extra gpu` 即可，无需每次设置镜像环境变量。
 
 `python -m training.dashboard --logdir runs --port 6006` 启动中文实时曲线窗口：浏览器访问 `http://127.0.0.1:6006/`，查看损失、验证切片困惑度区间图和最佳参数 ID。默认每 16 步反传记录一个点，整个逻辑 Batch 结束才更新参数；平均切片困惑度最低者记为本次 best，各轮参数仍保留。验证独立切片 `--L 32`、上下文 `--n 16`（n≤L），填充步按正确动作概率 0.5 评分；终端分别显示验证原局数与切片后局数。已有参数可用 `python -m training.evaluate --family Opus --id 2` 单独评估和画图。
 

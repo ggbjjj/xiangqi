@@ -47,7 +47,7 @@ flowchart TD
 
 预编译 cu128 wheel 及其依赖提供所需 CUDA 用户态运行库，运行本项目不必另装系统 CUDA Toolkit；NVIDIA 驱动仍需安装。`nvidia-smi` 的 CUDA 数字不代表当前 PyTorch wheel 的版本，当前构建查看 `torch.version.cuda`。没有逐型号 GPU 实测结果时，不承诺特定批量的显存或吞吐。
 
-现在 CPU 与 GPU 环境均由 uv 管理，共用同一份锁文件；按照 [uv 官方 PyTorch 配置方式](https://docs.astral.sh/uv/guides/integration/pytorch/)，用互斥 extras 从官方 CPU/cu128 索引选择同一版本。原 `neural` 是 `cpu` 的兼容别名。
+现在 CPU 与 GPU 环境均由 uv 管理，共用同一份锁文件；按照 [uv 官方 PyTorch 配置方式](https://docs.astral.sh/uv/guides/integration/pytorch/)，用互斥 extras 选择同一版本的 CPU/cu128 构建。CPU 使用官方索引，GPU 的 Torch 本体使用南京大学镜像，NVIDIA 运行库及其他依赖仍使用阿里云。原 `neural` 是 `cpu` 的兼容别名。
 
 在项目根目录二选一执行，自动创建 `.venv` 并安装 Python 3.12、项目、PyTorch 和训练依赖：
 
