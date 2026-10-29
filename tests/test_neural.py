@@ -51,7 +51,9 @@ def test_recompute_gradients_match_and_late_loss_reaches_history(window):
     b.load_state_dict(a.state_dict())
     x = torch.randn(3,1,15,10,9,requires_grad=True)
     z = x.detach().clone().requires_grad_(True)
-    a(x)[-1,0,123].backward(); b(z)[-1,0,123].backward()
+    # Use identical dropout masks when comparing recomputation gradients.
+    torch.manual_seed(1234); a(x)[-1,0,123].backward()
+    torch.manual_seed(1234); b(z)[-1,0,123].backward()
     assert x.grad[0].abs().sum()>0
     assert torch.allclose(x.grad,z.grad,atol=2e-6,rtol=2e-5)
     for p,q in zip(a.parameters(),b.parameters()):
@@ -158,6 +160,8 @@ def test_hint_top_three_matches_full_softmax_and_undo_rebuilds():
 def test_microbatch_gradients_equal_joint_valid_step_mean():
     torch.manual_seed(22)
     together,separate=tiny(False),tiny(False)
+    # Micro-batch partitions consume dropout RNG in a different order.
+    together.set_dropout(0); separate.set_dropout(0)
     separate.load_state_dict(together.state_dict())
     x=torch.randn(2,2,15,10,9)
     lengths=torch.tensor([2,1]); y=torch.tensor([[3,5],[4,-100]])

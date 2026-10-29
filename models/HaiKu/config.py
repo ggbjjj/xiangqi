@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass
+import math
 
 
 @dataclass(frozen=True)
@@ -12,9 +13,10 @@ class Haiku5Config:
     spatial_depth: int = 2
     ffn_dim: int = 512
     cnn_channels: int = 64
-    context_plies: int = 120  # K/V history boards, including current; independent of sequence T.
+    context_plies: int = 30  # K/V history boards, including current; independent of sequence T.
     checkpoint_attention: bool = True
     encoding: str = 'absolute-red-black-v1'
+    dropout: float = 0.1
 
     def __post_init__(self):
         if self.architecture != 'Haiku-5' or self.version != 1:
@@ -27,6 +29,8 @@ class Haiku5Config:
             raise ValueError('配置尺寸必须为正数')
         if self.encoding != 'absolute-red-black-v1':
             raise ValueError('不支持的输入/动作编码')
+        if type(self.dropout) not in (int,float) or not math.isfinite(self.dropout) or not 0 <= self.dropout <= 1:
+            raise ValueError('dropout 必须是 [0,1] 内的有限概率')
 
     def to_dict(self):
         return asdict(self)

@@ -11,13 +11,13 @@ from ai import NeuralAI, SearchAI, load_network
 from constants import COLS, ROWS, NAMES_BLACK, NAMES_RED
 from game import Game
 from project_paths import MODEL_CATALOG as MODEL_DB
-from model_store import list_hint_models, load_hint_model, default_model_name, get_parameter_config
+from model_store import list_hint_models, load_hint_model, default_model_name, get_parameter_config, load_value_model
 
 CELL = 56
 MARGIN_X, MARGIN_Y = 40, 40
 INFO_H = 72
 BOARD_W, BOARD_H = 528, 584
-GAME_W, GAME_H = 760, 720
+GAME_W, GAME_H = 1020, 720
 MENU_W, MENU_H = 560, 580
 COLOR_BG = (239, 211, 165)
 COLOR_LINE = (93, 62, 36)
@@ -278,10 +278,20 @@ class XiangqiUI:
         self.dialog_message = ''
         self._hint_generation, self._hint_cancel = 0, None
         self._hint_results = queue.Queue()
+        self.value_prediction=None
+        self.value_model_name=''
+        self.value_message='等待局势分析'
+        self.value_busy=False
+        self._value_generation=0
+        self._value_requested=False
+        self._value_cancel=None
+        self._value_results=queue.Queue()
+        self._value_lock=threading.Lock()
+        self._value_ai=None
         self.buttons = [('新局', self.action_new), ('悔棋', self.action_undo),
                         ('暂停/继续', self.action_pause), ('返回菜单', self.action_back),
                         ('退出', self.action_quit)]
-        self.btn_rects = [(pygame.Rect(12 + i * 149, 672, 140, 36), label)
+        self.btn_rects = [(pygame.Rect(12 + i * 201, 672, 192, 36), label)
                           for i, (label, _) in enumerate(self.buttons)]
 
     def _make_ai(self):
@@ -293,6 +303,7 @@ class XiangqiUI:
         return self.ai is not None and (self.mode == 'ai_vs_ai' or self.game.turn == self.ai_color)
 
     def _invalidate_ai(self):
+        self._invalidate_value()
         self._invalidate_hints()
         self._generation += 1
         if self._cancel_event is not None:
@@ -308,6 +319,59 @@ class XiangqiUI:
         self.hint_busy = False
         self.hints, self.hint_rows = [], []
         self.model_dialog = False
+
+    def _invalidate_value(self):
+        self._value_generation+=1
+        if self._value_cancel is not None: self._value_cancel.set()
+        self._value_cancel=None
+        self._value_requested=False
+        self.value_busy=False
+        self.value_prediction=None
+        self.value_message='等待局势分析'
+
+    def _request_value(self):
+        if self._value_requested: return
+        self._value_requested=True
+        if self.game.is_over():
+            self.value_message='对局已结束'
+            return
+        self.value_busy=True
+        self.value_message='正在预测当前局势…'
+        token=self._value_generation
+        board,turn,history=self.game.board.clone(),self.game.turn,list(self.game.history)
+        cancel=self._value_cancel=threading.Event()
+        def worker():
+            try:
+                with self._value_lock:
+                    if cancel.is_set(): raise CancelledError()
+                    if self._value_ai is None:
+                        if self._match_net is not None and hasattr(self._match_net,'value_head'):
+                            if not getattr(self._match_net,'value_trained',True):
+                                raise ValueError('当前模型的价值头尚未训练')
+                            net=self._match_net
+                        else:
+                            net=load_value_model(path=self.model_db)
+                        self._value_ai=NeuralAI(net)
+                    prediction=self._value_ai.evaluate_position(board,turn,history,cancel)
+                    name=getattr(self._value_ai.net,'display_name','Opus-5')
+                self._value_results.put((token,prediction,name,None))
+            except CancelledError:
+                pass
+            except Exception as error:
+                print(f'[局势预测] {error}')
+                self._value_results.put((token,None,'','暂无可用的局势预测模型'))
+        threading.Thread(target=worker,daemon=True,name='xiangqi-value').start()
+
+    def _poll_value(self):
+        while True:
+            try: token,prediction,name,error=self._value_results.get_nowait()
+            except queue.Empty: break
+            if token!=self._value_generation: continue
+            self.value_busy=False
+            self._value_cancel=None
+            self.value_prediction=prediction
+            self.value_model_name=name
+            self.value_message=error or ''
 
     def action_hint(self):
         if self.game.is_over() or self._is_ai_turn() or self.mode == 'ai_vs_ai':
@@ -445,6 +509,8 @@ class XiangqiUI:
                     break
                 self._poll_ai()
                 self._poll_hints()
+                self._poll_value()
+                self._request_value()
                 if (self._is_ai_turn() and not self.game.is_over() and not self.paused
                         and not self.ai_failed and not self.thinking and pygame.time.get_ticks() >= self._ai_due):
                     self._ai_move()
@@ -466,7 +532,7 @@ class XiangqiUI:
 
         def worker():
             try:
-                kwargs = {'history':history} if isinstance(ai,NeuralAI) else {}
+                kwargs = {'history':history} if isinstance(ai,(NeuralAI,SearchAI)) else {}
                 move = ai.choose_move(board, turn, cancel_event=cancel, **kwargs)
                 results.put((token, turn, move, None))
             except CancelledError:
@@ -502,12 +568,15 @@ class XiangqiUI:
                 self.message = 'AI 未能完成走棋，请点击“重试AI”或返回菜单'
 
     def _after_move(self):
+        self._invalidate_value()
         self._invalidate_hints()
         self._clear_selection()
         self._refresh_last_move()
         side = '红' if self.game.turn == 'r' else '黑'
         self.message = self.game.status or (f'将军！{side}方请应将' if self.game.board.is_in_check(self.game.turn)
                                            else f'轮到{side}方走子')
+        if not self.game.is_over() and self.game.must_change_move():
+            self.message = f'同一循环连续三次出现，{side}方须变招'
         self._ai_due = pygame.time.get_ticks() + (500 if self.mode == 'ai_vs_ai' else 150)
 
     def _on_click(self, pos):
@@ -662,6 +731,34 @@ class XiangqiUI:
             name = (NAMES_RED if step['turn'] == 'r' else NAMES_BLACK)[step['piece'][1]]
             label = f'{"红" if step["turn"] == "r" else "黑"}{name} {step["fr"]}{step["fc"]} → {step["tr"]}{step["tc"]}'
             text_fit(self.screen, label, self.small_font, COLOR_LINE, pygame.Rect(542, (590 if self.hints else 414) + i * 28, 206, 24))
+        self._draw_value_panel()
+
+    def _draw_value_panel(self):
+        left,width=772,232
+        pygame.draw.rect(self.screen,COLOR_LIGHT,(left-10,92,width+20,362),border_radius=9)
+        text_fit(self.screen,'当前局势预测',self.button_font,COLOR_DARK,pygame.Rect(left,106,width,28))
+        if self.value_prediction is None:
+            text_fit(self.screen,self.value_message,self.small_font,COLOR_LINE,pygame.Rect(left,153,width,26))
+            text_fit(self.screen,'需要已训练的 Opus 模型',self.small_font,COLOR_LINE,pygame.Rect(left,188,width,26))
+            return
+        p=self.value_prediction
+        text_fit(self.screen,'分析模型：'+self.value_model_name,self.small_font,COLOR_LINE,pygame.Rect(left,144,width,26))
+        values=[('红方胜率',p['red_win'],COLOR_RED),('和棋概率',p['draw'],(103,119,101)),
+                ('黑方胜率',p['black_win'],COLOR_DARK)]
+        for index,(label,prob,color) in enumerate(values):
+            y=186+index*39
+            text_fit(self.screen,f'{label}  {prob:.1%}',self.button_font,color,pygame.Rect(left,y,width,28))
+        x=left
+        for label,prob,color in values:
+            segment=width*prob
+            pygame.draw.rect(self.screen,color,(round(x),313,round(x+segment)-round(x),12))
+            x+=segment
+        if p['draw']>=max(p['red_win'],p['black_win']): outlook='预测：和棋概率最高'
+        elif abs(p['red_win']-p['black_win'])<1e-6: outlook='预测：双方胜率相同'
+        else: outlook='预测：'+('红方' if p['red_win']>p['black_win'] else '黑方')+'胜率较高'
+        text_fit(self.screen,outlook,self.small_font,COLOR_DARK,pygame.Rect(left,344,width,25))
+        text_fit(self.screen,'红方胜率即黑方负率',self.small_font,COLOR_LINE,pygame.Rect(left,382,width,25))
+        text_fit(self.screen,'黑方胜率即红方负率',self.small_font,COLOR_LINE,pygame.Rect(left,411,width,25))
 
 
 def run_app(model_path=MODEL_DB, model_name=None, initial_mode=None, depth=2,*,parameter_family=None,parameter_id=None):

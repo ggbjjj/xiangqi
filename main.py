@@ -57,7 +57,7 @@ def cmd_cli(args):
         print(game.board)
         side = '红' if game.turn == 'r' else '黑'
         if mode == 'ai' or (mode == 'pve' and game.turn != player_color):
-            kwargs = {'history':game.history} if isinstance(ai,NeuralAI) else {}
+            kwargs = {'history':game.history} if isinstance(ai,(NeuralAI,SearchAI)) else {}
             move = ai.choose_move(game.board, game.turn, **kwargs)
             if move is None:
                 game._evaluate_end()

@@ -6,8 +6,8 @@ for chunk/microbatch backward; zero-weight branches are never evaluated.
 from dataclasses import dataclass, fields
 import math
 import torch
-from torch.nn import functional as F
 from models.HaiKu.loss import valid_steps
+from models.Opus.loss import masked_value_ce
 from .exploration import behavior_log_probs,behavior_entropy
 
 
@@ -23,10 +23,13 @@ class LossWeights:
             raise ValueError('损失权重必须为非负有限数')
 
     @classmethod
-    def selfplay(cls,with_value=True): return cls(0.,1.,1. if with_value else 0.,.01)
+    def books(cls,with_value=True): return cls(book=1.,value=1. if with_value else 0.)
 
     @classmethod
-    def mixed(cls,with_value=True): return cls(.1,1.,1. if with_value else 0.,.01)
+    def selfplay(cls,with_value=True): return cls(book=1.,ppo=1.,value=1. if with_value else 0.,entropy=1.)
+
+    @classmethod
+    def mixed(cls,with_value=True): return cls.selfplay(with_value)
 
 
 @dataclass(frozen=True)
@@ -92,7 +95,7 @@ class LossBatch:
 
     def counts(self):
         _,book,own,value=self.masks()
-        return LossCounts(int(book.sum()),int(own.sum()),int(value.sum()),int(own.sum()))
+        return LossCounts(int(book.sum()),int(own.sum()),int(value.sum()),int((book|own).sum()))
 
 
 @dataclass
@@ -116,7 +119,8 @@ def mixed_loss(output,batch,weights=LossWeights(),*,denominators=None,clip=.2):
     if not math.isfinite(clip) or not 0<clip<1: raise ValueError('PPO clip 必须在 0..1 内')
     counts=batch.counts(); denominators=counts if denominators is None else denominators
     for field in fields(counts):
-        if getattr(denominators,field.name)<getattr(counts,field.name): raise ValueError('整批分母不能小于当前段样本数')
+        if getattr(weights,field.name) and getattr(denominators,field.name)<getattr(counts,field.name):
+            raise ValueError('整批分母不能小于当前段样本数')
     zero=policy.float().reshape(-1)[:0].sum()
     sums={name:zero for name in ('book','ppo','value','entropy')}; diagnostics={}
     def chosen_log(log_mu,mask):
@@ -131,11 +135,11 @@ def mixed_loss(output,batch,weights=LossWeights(),*,denominators=None,clip=.2):
     if weights.book and counts.book:
         log_pi=behavior_log_probs(policy[book],batch.legal[book])
         sums['book']=-chosen_log(log_pi,book).sum()
-    if (weights.ppo or weights.entropy) and counts.ppo:
-        def select(v):
-            v=torch.as_tensor(v,device=policy.device,dtype=torch.float32)
-            return torch.broadcast_to(v,valid.shape)[own]
-        log_mu=behavior_log_probs(policy[own],batch.legal[own],select(batch.temperature),select(batch.epsilon))
+    def select(v,mask):
+        v=torch.as_tensor(v,device=policy.device,dtype=torch.float32)
+        return torch.broadcast_to(v,valid.shape)[mask]
+    if weights.ppo and counts.ppo:
+        log_mu=behavior_log_probs(policy[own],batch.legal[own],select(batch.temperature,own),select(batch.epsilon,own))
         if weights.ppo:
             for field in ('old_log_mu','old_value'):
                 v=getattr(batch,field)
@@ -155,12 +159,19 @@ def mixed_loss(output,batch,weights=LossWeights(),*,denominators=None,clip=.2):
             diagnostics={'ratio_sum':ratio.detach().sum(),
                          'clip_count':((ratio-1).abs()>clip).float().sum().detach(),
                          'approx_kl_sum':((ratio-1)-log_ratio).detach().sum()}
-        if weights.entropy: sums['entropy']=behavior_entropy(log_mu,batch.legal[own]).sum()
+    if weights.entropy and counts.entropy:
+        entropy_mask=book|own
+        log_entropy=behavior_log_probs(policy[entropy_mask],batch.legal[entropy_mask],
+            select(batch.temperature,entropy_mask),select(batch.epsilon,entropy_mask))
+        sums['entropy']=behavior_entropy(log_entropy,batch.legal[entropy_mask]).sum()
+    # No known outcome means value loss stays exactly zero, independently of
+    # its coefficient. Keep the value graph disconnected in that case so an
+    # optimizer with momentum/weight decay cannot update the value-only branch.
     if weights.value and counts.value:
         if value_logits is None: raise ValueError('当前模型没有价值头；请将 lambda-value 设为 0')
         if value_logits.shape!=(*valid.shape,3): raise ValueError('价值输出必须是 [T,B,3] logits')
-        if not torch.isfinite(value_logits[value]).all(): raise ValueError('价值 logits 非有限值')
-        sums['value']=F.cross_entropy(value_logits[value].float(),targets(value),reduction='sum')
+        value_targets=batch.value_targets.masked_fill(~value,-100)
+        sums['value'],_=masked_value_ce(value_logits,value_targets,batch.lengths,reduction='sum')
     total=zero
     for name in sums:
         weight=getattr(weights,name); n=getattr(denominators,name)

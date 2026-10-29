@@ -43,7 +43,9 @@ class SearchAI:
                     if target else 0)
         return sorted(moves, key=score, reverse=True)
 
-    def choose_move(self, board, turn, cancel_event=None):
+    def choose_move(self, board, turn, cancel_event=None, history=None):
+        from repetition import RepetitionTracker
+        tracker = RepetitionTracker.from_history(board, turn, history)
         deadline = monotonic() + self.time_limit
 
         def check_budget():
@@ -54,7 +56,7 @@ class SearchAI:
 
         def search(position, color, depth, alpha, beta, ply):
             check_budget()
-            moves = position.all_legal_moves(color)
+            moves = tracker.legal_moves(position, color)
             if not moves:
                 return -100000 + ply
             if depth == 0:
@@ -62,14 +64,19 @@ class SearchAI:
             best = -float('inf')
             other = 'b' if color == 'r' else 'r'
             for move in self._ordered(position, moves):
-                value = -search(position.apply_move(*move), other, depth - 1, -beta, -alpha, ply + 1)
+                after = position.apply_move(*move)
+                tracker.push(move, after)
+                try:
+                    value = -search(after, other, depth - 1, -beta, -alpha, ply + 1)
+                finally:
+                    tracker.pop()
                 best = max(best, value)
                 alpha = max(alpha, value)
                 if alpha >= beta:
                     break
             return best
 
-        moves = self._ordered(board, board.all_legal_moves(turn))
+        moves = self._ordered(board, tracker.legal_moves(board, turn))
         if not moves:
             return None
         chosen = moves[0]
@@ -78,8 +85,12 @@ class SearchAI:
             best_score, best_move = -float('inf'), chosen
             try:
                 for move in moves:
-                    value = -search(board.apply_move(*move), other, depth - 1,
-                                    -float('inf'), -best_score, 1)
+                    after = board.apply_move(*move)
+                    tracker.push(move, after)
+                    try:
+                        value = -search(after, other, depth - 1, -float('inf'), -best_score, 1)
+                    finally:
+                        tracker.pop()
                     if value > best_score:
                         best_score, best_move = value, move
             except TimeoutError:
@@ -123,12 +134,12 @@ class NeuralAI:
 
     def reset(self):
         self._keys, self._cache, self._logits = [], None, None
+        self._value_logits = None
 
-    def rank_moves(self, board, turn, history=None, topk=3, cancel_event=None):
+    def _forward_position(self, board, turn, history=None, cancel_event=None):
         import torch
         from board import Board
-        from encoder import encode_state, legal_action_mask, action_to_move
-        from models.HaiKu.loss import masked_probabilities
+        from encoder import encode_state
         positions = [(Board(h['board_state']),h['prev_turn']) for h in (history or [])]+[(board,turn)]
         keys = [(b.signature(),color) for b,color in positions]
         if keys[:len(self._keys)] != self._keys:
@@ -142,12 +153,36 @@ class NeuralAI:
                 try:
                     output,self._cache = self.net.forward_step(x,self._cache)
                     self._logits = getattr(output,'policy_logits',output)
+                    self._value_logits = getattr(output,'value_logits',None)
                 except Exception:
                     self.reset()
                     raise
                 self._keys.append((b.signature(),color))
             self._keys = keys
-            mask = torch.from_numpy(legal_action_mask(board,turn))[None].to(self.device)
+        if cancel_event is not None and cancel_event.is_set():
+            self.reset()
+            raise CancelledError()
+
+    def evaluate_position(self, board, turn, history=None, cancel_event=None):
+        """One WDL prediction, remapped from side-to-move to fixed red/black sides."""
+        import torch
+        self._forward_position(board,turn,history,cancel_event)
+        if self._value_logits is None: raise ValueError('当前模型没有价值头')
+        with torch.inference_mode():
+            logits=self._value_logits.float()
+            if logits.shape!=(1,3) or not torch.isfinite(logits).all():
+                raise ValueError('价值预测无效')
+            win,draw,loss=map(float,logits.softmax(-1)[0])
+        red,black=(win,loss) if turn=='r' else (loss,win)
+        return {'red_win':red,'draw':draw,'black_win':black,'turn':turn}
+
+    def rank_moves(self, board, turn, history=None, topk=3, cancel_event=None):
+        import torch
+        from encoder import legal_action_mask,action_to_move
+        from models.HaiKu.loss import masked_probabilities
+        self._forward_position(board,turn,history,cancel_event)
+        with torch.inference_mode():
+            mask = torch.from_numpy(legal_action_mask(board,turn,history))[None].to(self.device)
             count = int(mask.sum())
             if count == 0: return []
             probs = masked_probabilities(self._logits,mask)[0]

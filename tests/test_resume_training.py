@@ -109,7 +109,7 @@ def test_fresh_training_saves_independent_sequence_length_and_window(saved_train
     train.main(args)
     report=json.loads((output/'independent-window'/'evaluation.json').read_text(encoding='utf-8'))
     net,_,state=load_checkpoint(db,report['checkpoint_id'],resume=True)
-    expected=120 if window is None else window
+    expected=30 if window is None else window
     assert net.config.context_plies==expected
     assert all(block.attn.limit==expected for core in net.cores for block in [*core.history,core.cross])
     assert state['T']==sequence_length and state['context_plies']==expected
@@ -121,7 +121,12 @@ def test_resume_window_override_selects_best_with_new_context(saved_training,mon
     import train
     config,record=saved_training
     # A worse score must still replace the previous window's best checkpoint.
-    monkeypatch.setattr(train,'evaluate',lambda *a,**kw: {'loss':10.,'top1':0.,'top3':0.,'games':1,'steps':1})
+    original_evaluate=train.evaluate
+    def score(*args,**kwargs):
+        result=original_evaluate(*args,**kwargs)
+        result['perplexity']=10.
+        return result
+    monkeypatch.setattr(train,'evaluate',score)
     main(['--record',str(record),'--device','cpu','--precision','none',
           '--epochs','2','--context-plies','2'])
     evaluation=next(Path(config['output_base']).glob('*/fixture/evaluation.json'))
@@ -138,33 +143,37 @@ def test_resume_window_override_selects_best_with_new_context(saved_training,mon
 
 def test_resume_record_and_cli_forward_context_independently(saved_training):
     config,record=saved_training
-    record.write_text(json.dumps(dict(config,context_plies=3)),encoding='utf-8')
+    record.write_text(json.dumps(dict(config,context_plies=3,dropout=.2)),encoding='utf-8')
     args=main(['--record',str(record),'--check-only'])
     options=dict(zip(args[::2],args[1::2]))
     assert options['--T']=='1' and options['--context-plies']=='3'
-    args=main(['--record',str(record),'--check-only','--context-plies','2'])
+    assert options['--dropout']=='0.2'
+    args=main(['--record',str(record),'--check-only','--context-plies','2','--dropout','0.3'])
     options=dict(zip(args[::2],args[1::2]))
     assert options['--T']=='1' and options['--context-plies']=='2'
+    assert options['--dropout']=='0.3'
 
 
 @pytest.mark.parametrize('window',[None,2])
 def test_evaluation_inherits_or_overrides_saved_window_without_writes(saved_training,monkeypatch,window):
     import train
-    config,_=saved_training
+    config,record=saved_training
     before=Path(config['model_db']).read_bytes()
     seen=[]
+    original_evaluate=train.evaluate
     def evaluate(model,loader,*args,**kwargs):
         seen.append((model.config.context_plies,loader.dataset.T))
         assert all(block.attn.limit==model.config.context_plies
                    for core in model.cores for block in [*core.history,core.cross])
-        return {'loss':1.,'top1':0.,'top3':0.,'games':1,'steps':1}
+        return original_evaluate(model,loader,*args,**kwargs)
     monkeypatch.setattr(train,'evaluate',evaluate)
     args=['--evaluate',config['checkpoint_id'],'--model-db',config['model_db'],
-          '--data',config['data'],'--T','3','--device','cpu','--precision','none','--workers','0']
+          '--data',config['data'],'--T','3','--device','cpu','--precision','none','--workers','0',
+          '--output',str(record.parent/'evaluation')]
     if window is not None:
         args+=['--context-plies',str(window)]
     train.main(args)
-    assert seen==[(1 if window is None else window,3)]
+    assert seen==[(1 if window is None else window,32)]
     assert before==Path(config['model_db']).read_bytes()
 
 

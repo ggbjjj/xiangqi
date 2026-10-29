@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "family": "Opus",
+  "created_at": "2026-10-28T21:40:20+08:00",
+  "code": {
+    "commit": "496f36e7959e6d7873f004112fa1b4bf4f1b313e",
+    "has_local_changes": true
+  },
+  "selfplay_included": false,
+  "files": [
+    {
+      "path": "ModelParameters/Opus/models.sqlite3",
+      "bytes": 66404352,
+      "sha256": "f6d4972c820e1737a4f1f701db6d506c9b299f2f35ff21628ec21a520e82d082"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261028-094701-460939/best.json",
+      "bytes": 315,
+      "sha256": "19a7d18f8026f12d1b548f9989c881a7434212bef3c60e5ea4777cf4fd228bed"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261028-094701-460939/config.json",
+      "bytes": 1581,
+      "sha256": "0196c4dd003b87f00121e257ad175677ad59e95202b7e9abd621d933c3b78530"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261028-094701-460939/last_completed.json",
+      "bytes": 342,
+      "sha256": "647c84108b9af5639e0d785c8b47f0cc2186165f8c6069f775bb90cda1d4fb93"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261028-094701-460939/metrics.jsonl",
+      "bytes": 234995,
+      "sha256": "f356836ae85644abc1c4c137b3302915a3b7f04df62eb207500173a2fc2d1d1a"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261028-094701-460939/report.json",
+      "bytes": 851,
+      "sha256": "e985f301e9a3b44c2a3e34aa36328fdb7754d2bacf661c05b86798ea31927fb9"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261028-094701-460939/tensorboard/events.out.tfevents.1793180821.I2c0088de59054014c0.5990.0",
+      "bytes": 1617156,
+      "sha256": "b331fd18b40cdadc1b94bbfc7c33c0c4e364c8c16d592aafb98adda11ca8d261"
+    }
+  ],
+  "note": "数据库使用 SQLite backup 生成独立一致快照；导出前请先停止训练和生成，以使日志与参数对应。"
+}

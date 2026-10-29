@@ -26,7 +26,7 @@ xiangqi-import = "data_pipeline.import_records:main"
 dev = ["pytest>=8,<10"]
 
 [tool.setuptools]
-py-modules = ["main", "ui", "game", "board", "piece", "constants", "ai", "net", "encoder", "train", "project_paths", "model_store"]
+py-modules = ["main", "ui", "game", "board", "piece", "constants", "ai", "net", "encoder", "train", "project_paths", "model_store", "repetition"]
 
 [tool.setuptools.packages.find]
 include = ["models*", "data_pipeline*", "training*", "selfplay*"]
@@ -39,13 +39,13 @@ testpaths = ["tests", "test_game.py", "test_smoke.py"]
 
 [tool.uv]
 conflicts = [[{ extra = "cpu" }, { extra = "gpu" }, { extra = "neural" }]]
-concurrent-downloads = 4
+concurrent-downloads = 2
 
-# Ordinary packages (including NVIDIA runtime dependencies) use the mirror.
+# Ordinary packages and all transitive NVIDIA CUDA runtime dependencies use Aliyun.
 # Torch stays pinned to the explicit CPU / CUDA indexes below.
 [[tool.uv.index]]
-name = "tuna"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+name = "aliyun"
+url = "https://mirrors.aliyun.com/pypi/simple/"
 default = true
 
 [[tool.uv.index]]

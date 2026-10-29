@@ -1,0 +1,565 @@
+{
+  "status": "interrupted_incomplete",
+  "enabled_in_application": false,
+  "source_sha256": {
+    "cn2020.py": "00f649c642338ba6ce8c634040e6e447c254c9e08937c07dc642abc210207f7f",
+    "__init__.py": "a37667de29ac230d6a45832301f7fea3994b67ec7c0cdf713a722581273d5a55"
+  },
+  "completed_moves": 92,
+  "mismatches": 16,
+  "note": "Partial diagnostic only; not a completed validation of all 79 cases.",
+  "assessments": [
+    {
+      "case": "图2",
+      "index": 0,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图2",
+      "index": 1,
+      "expected": "idle",
+      "actual": "chase"
+    },
+    {
+      "case": "图2",
+      "index": 2,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图2",
+      "index": 3,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图3",
+      "index": 0,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图3",
+      "index": 1,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图3",
+      "index": 2,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图3",
+      "index": 3,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图4",
+      "index": 0,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图4",
+      "index": 1,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图4",
+      "index": 2,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图4",
+      "index": 3,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图5",
+      "index": 0,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图5",
+      "index": 1,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图5",
+      "index": 2,
+      "expected": "check",
+      "actual": "check"
+    },
+    {
+      "case": "图5",
+      "index": 3,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图6",
+      "index": 0,
+      "expected": "check",
+      "actual": "check"
+    },
+    {
+      "case": "图6",
+      "index": 1,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图6",
+      "index": 2,
+      "expected": "check",
+      "actual": "check"
+    },
+    {
+      "case": "图6",
+      "index": 3,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图7",
+      "index": 0,
+      "expected": "kill",
+      "actual": "kill"
+    },
+    {
+      "case": "图7",
+      "index": 1,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图7",
+      "index": 2,
+      "expected": "kill",
+      "actual": "kill"
+    },
+    {
+      "case": "图7",
+      "index": 3,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图8",
+      "index": 0,
+      "expected": "chase",
+      "actual": "idle"
+    },
+    {
+      "case": "图8",
+      "index": 1,
+      "expected": "chase",
+      "actual": "idle"
+    },
+    {
+      "case": "图8",
+      "index": 2,
+      "expected": "check",
+      "actual": "check"
+    },
+    {
+      "case": "图8",
+      "index": 3,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图9",
+      "index": 0,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图9",
+      "index": 1,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图9",
+      "index": 2,
+      "expected": "idle",
+      "actual": "chase"
+    },
+    {
+      "case": "图9",
+      "index": 3,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图10",
+      "index": 0,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图10",
+      "index": 1,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图10",
+      "index": 2,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图10",
+      "index": 3,
+      "expected": "chase",
+      "actual": "idle"
+    },
+    {
+      "case": "图11",
+      "index": 0,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图11",
+      "index": 1,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图11",
+      "index": 2,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图11",
+      "index": 3,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图12",
+      "index": 0,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图12",
+      "index": 1,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图12",
+      "index": 2,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图12",
+      "index": 3,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图13",
+      "index": 0,
+      "expected": "check",
+      "actual": "check"
+    },
+    {
+      "case": "图13",
+      "index": 1,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图13",
+      "index": 2,
+      "expected": "idle",
+      "actual": "chase"
+    },
+    {
+      "case": "图13",
+      "index": 3,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图14",
+      "index": 0,
+      "expected": "idle",
+      "actual": "chase"
+    },
+    {
+      "case": "图14",
+      "index": 1,
+      "expected": "chase",
+      "actual": "idle"
+    },
+    {
+      "case": "图14",
+      "index": 2,
+      "expected": "idle",
+      "actual": "chase"
+    },
+    {
+      "case": "图14",
+      "index": 3,
+      "expected": "chase",
+      "actual": "idle"
+    },
+    {
+      "case": "图15",
+      "index": 0,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图15",
+      "index": 1,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图15",
+      "index": 2,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图15",
+      "index": 3,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图16",
+      "index": 0,
+      "expected": "check",
+      "actual": "check"
+    },
+    {
+      "case": "图16",
+      "index": 1,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图16",
+      "index": 2,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图16",
+      "index": 3,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图17",
+      "index": 0,
+      "expected": "check",
+      "actual": "check"
+    },
+    {
+      "case": "图17",
+      "index": 1,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图17",
+      "index": 2,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图17",
+      "index": 3,
+      "expected": "kill",
+      "actual": "kill"
+    },
+    {
+      "case": "图18",
+      "index": 0,
+      "expected": "check",
+      "actual": "check"
+    },
+    {
+      "case": "图18",
+      "index": 1,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图18",
+      "index": 2,
+      "expected": "idle",
+      "actual": "chase"
+    },
+    {
+      "case": "图18",
+      "index": 3,
+      "expected": "kill",
+      "actual": "kill"
+    },
+    {
+      "case": "图19",
+      "index": 0,
+      "expected": "chase",
+      "actual": "idle"
+    },
+    {
+      "case": "图19",
+      "index": 1,
+      "expected": "kill",
+      "actual": "kill"
+    },
+    {
+      "case": "图19",
+      "index": 2,
+      "expected": "check",
+      "actual": "check"
+    },
+    {
+      "case": "图19",
+      "index": 3,
+      "expected": "kill",
+      "actual": "kill"
+    },
+    {
+      "case": "图20",
+      "index": 0,
+      "expected": "kill",
+      "actual": "kill"
+    },
+    {
+      "case": "图20",
+      "index": 1,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图20",
+      "index": 2,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图20",
+      "index": 3,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图21",
+      "index": 0,
+      "expected": "idle",
+      "actual": "chase"
+    },
+    {
+      "case": "图21",
+      "index": 1,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图21",
+      "index": 2,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图21",
+      "index": 3,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图22",
+      "index": 0,
+      "expected": "chase",
+      "actual": "idle"
+    },
+    {
+      "case": "图22",
+      "index": 1,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图22",
+      "index": 2,
+      "expected": "chase",
+      "actual": "idle"
+    },
+    {
+      "case": "图22",
+      "index": 3,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图23",
+      "index": 0,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图23",
+      "index": 1,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图23",
+      "index": 2,
+      "expected": "chase",
+      "actual": "chase"
+    },
+    {
+      "case": "图23",
+      "index": 3,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图24",
+      "index": 0,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图24",
+      "index": 1,
+      "expected": "idle",
+      "actual": "idle"
+    },
+    {
+      "case": "图24",
+      "index": 2,
+      "expected": "chase",
+      "actual": "idle"
+    },
+    {
+      "case": "图24",
+      "index": 3,
+      "expected": "idle",
+      "actual": "idle"
+    }
+  ]
+}

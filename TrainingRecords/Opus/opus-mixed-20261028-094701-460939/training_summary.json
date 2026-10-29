@@ -1,0 +1,88 @@
+{
+  "family": "Opus",
+  "public_name": "Opus-5",
+  "parameter_id": 2,
+  "is_default": true,
+  "checkpoint_id": "bcdb8df21f5048a88c28f34efb949b8f",
+  "version_name": "Opus-5-e1-bcdb8df2",
+  "completed_epochs": 1,
+  "completed_epochs_this_run": 1,
+  "global_step": 195,
+  "run_id": "opus-mixed-20261028-094701-460939",
+  "value_trained": false,
+  "loss_weights": {
+    "book": 1.0,
+    "ppo": 0.0,
+    "value": 0.0,
+    "entropy": 0.0
+  },
+  "train": {
+    "loss": 2.799901906393339,
+    "terms": {
+      "book": 2.799901906393339,
+      "ppo": 0.0,
+      "value": 0.0,
+      "entropy": 0.0
+    },
+    "counts": {
+      "book": 1895986,
+      "ppo": 0,
+      "value": 0,
+      "entropy": 0
+    }
+  },
+  "validation": {
+    "loss": 2.595229096598579,
+    "top1": 0.2784326071054898,
+    "top3": 0.4829770094721345,
+    "games": 1440,
+    "steps": 108001
+  },
+  "settings": {
+    "source": "books",
+    "T": 100,
+    "batch_size": 128,
+    "micro_batch": 64,
+    "tbptt_steps": 16,
+    "lr": 0.0003,
+    "weight_decay": 0.0001,
+    "device": "cuda"
+  },
+  "source_bundle": "D:\\模型参数信息\\return-Opus-20261028-214020-240829\\return-Opus-20261028-214020-240829",
+  "source_database_sha256": "f6d4972c820e1737a4f1f701db6d506c9b299f2f35ff21628ec21a520e82d082",
+  "weights_sha256": "c5704cbbb71b26ff062edc4352a3de25d173824dae7e56d26f2218abdcad2f63",
+  "training_state_sha256": "cf309c4693f1c1d300389441708bb7539323acf9c12fa392d508f4a5dcad4955",
+  "backup_database": "backups\\parameters\\Opus-before-import-20261028-215142-481831\\models.sqlite3",
+  "model_database": "ModelParameters/Opus/models.sqlite3",
+  "local_run_directory": "runs/mixed/opus-mixed-20261028-094701-460939",
+  "raw_source_untouched": true,
+  "chart_summary": {
+    "first_batch_loss": 3.4885015810320605,
+    "last_batch_loss": 2.5995054394786896,
+    "logical_batches": 195,
+    "micro_batches": 390,
+    "backward_segments": 2730,
+    "training_elapsed_seconds": 8777.12299063243,
+    "figures": [
+      "training-curves.png",
+      "training-curves.svg"
+    ]
+  },
+  "verification": {
+    "database_integrity": "ok",
+    "manifest_files_verified": 7,
+    "weights_and_training_state_identical": true,
+    "initial_checkpoint_retained": true,
+    "strict_model_load": "passed",
+    "optimizer_restore": "passed",
+    "cpu_forward_policy_shape": [
+      1,
+      8100
+    ],
+    "cpu_forward_value_shape": [
+      1,
+      3
+    ],
+    "untrained_value_prediction_blocked": true
+  }
+}

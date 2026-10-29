@@ -1,5 +1,6 @@
 """Read-only, incremental access to existing training events for the Chinese viewer."""
 import math
+import json
 from pathlib import Path
 import threading
 
@@ -30,4 +31,22 @@ class CurveReader:
             for tag in accumulator.Tags()['scalars']:
                 points=[[e.step,e.value,e.wall_time] for e in accumulator.Scalars(tag) if math.isfinite(e.value)]
                 series[tag]=sample_points(points)
-        return {'run':run,'series':series,'display_point_limit':2000}
+        weights=None
+        for candidate in (path/'loss_weights.json',path.parent/'config.json'):
+            if not candidate.resolve().is_relative_to(self.logdir): continue
+            try:
+                supplied=json.loads(candidate.read_text(encoding='utf-8')).get('weights')
+                if isinstance(supplied,dict):
+                    weights={k:float(supplied.get(k,0)) for k in ('book','value','ppo','entropy')}
+                    if any(not math.isfinite(v) or v<0 for v in weights.values()): weights=None
+                    else: break
+            except (OSError,ValueError,TypeError,AttributeError): pass
+        validation=None
+        candidate=path.parent/'validation'/'latest.json'
+        if candidate.resolve().is_relative_to(self.logdir):
+            try:
+                validation=json.loads(candidate.read_text(encoding='utf-8'))
+                if not isinstance(validation.get('histogram',{}).get('bins'),list): validation=None
+            except (OSError,ValueError,AttributeError): validation=None
+        return {'run':run,'series':series,'weights':weights,'display_point_limit':2000,
+                'validation_perplexity':validation}

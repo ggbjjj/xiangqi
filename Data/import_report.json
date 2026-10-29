@@ -3,15 +3,17 @@
   "raw_records": 61857,
   "status": {
     "excluded_category": 4783,
-    "pending_decoder": 3389,
-    "rejected": 78,
-    "validated": 53607
+    "excluded_empty": 17,
+    "rejected": 88,
+    "validated": 56969
   },
-  "games": 27759,
+  "games": 30312,
   "splits": {
-    "test": 1403,
-    "train": 24916,
-    "validation": 1440
+    "test": 1557,
+    "train": 27179,
+    "validation": 1576
   },
-  "plies": 2392304
+  "plies": 2461976,
+  "cbl_decoder": "ccbridge-v21-mainline-v1",
+  "cbl_report": "artifacts\\cbl-merge-20261028\\merge_report.json"
 }

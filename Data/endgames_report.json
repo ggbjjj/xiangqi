@@ -1,0 +1,66 @@
+{
+  "unit": "单步（ply）；红黑各走一次为 2 步 = 1 回合",
+  "scope": "games 表内去重后的完整合法主线；未训练切段、未补零",
+  "bin_width": 32,
+  "stats": {
+    "count": 2246,
+    "total_plies": 57976,
+    "max": 135,
+    "mean": 25.81300089047195,
+    "median": 21.0,
+    "min": 1
+  },
+  "bins": [
+    {
+      "low": 1,
+      "high": 32,
+      "count": 1651,
+      "percent": 73.50845948352627
+    },
+    {
+      "low": 33,
+      "high": 64,
+      "count": 490,
+      "percent": 21.816562778272484
+    },
+    {
+      "low": 65,
+      "high": 96,
+      "count": 95,
+      "percent": 4.229741763134461
+    },
+    {
+      "low": 97,
+      "high": 128,
+      "count": 9,
+      "percent": 0.4007123775601068
+    },
+    {
+      "low": 129,
+      "high": 160,
+      "count": 1,
+      "percent": 0.04452359750667854
+    }
+  ],
+  "raw_records": 2779,
+  "raw_status": {
+    "excluded_empty": 12,
+    "rejected": 7,
+    "validated": 2760
+  },
+  "results": {
+    "*": 582,
+    "0-1": 105,
+    "1-0": 1119,
+    "1/2-1/2": 440
+  },
+  "splits": {
+    "test": 121,
+    "train": 2013,
+    "validation": 112
+  },
+  "unique_start_positions": 2205,
+  "overlaps_book_database": 12,
+  "result_conflicts": 0,
+  "database": "D:\\象棋\\Data\\endgames.sqlite3"
+}

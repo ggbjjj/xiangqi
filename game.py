@@ -27,6 +27,18 @@ class Game:
         self.mode = self.MODE_PVP
         self.ai_color = None
         self.quiet_moves = 0
+        self._repetition = None
+
+    def repetition_tracker(self):
+        from repetition import RepetitionTracker
+        tracker = self._repetition
+        if (tracker is None or len(tracker.moves) != len(self.history) or
+                tracker.keys[-1] != (self.board.signature(), self.turn)):
+            tracker = self._repetition = RepetitionTracker.from_history(self.board, self.turn, self.history)
+        return tracker
+
+    def must_change_move(self):
+        return bool(self.repetition_tracker().forbidden_moves())
 
     @staticmethod
     def opponent(color):
@@ -39,11 +51,11 @@ class Game:
         p = self.board.grid[r][c]
         if p is None or p.color != self.turn:
             return []
-        return self.board.legal_moves(r, c)
+        return [(tr, tc) for fr, fc, tr, tc in self.all_legal_moves() if (fr, fc) == (r, c)]
 
     def all_legal_moves(self):
         """返回当前方所有合法走法 [(fr,fc,tr,tc), ...]。"""
-        return [] if self.is_over() else self.board.all_legal_moves(self.turn)
+        return [] if self.is_over() else self.repetition_tracker().legal_moves(self.board, self.turn)
 
     def move(self, fr, fc, tr, tc):
         """尝试走子。
@@ -65,9 +77,10 @@ class Game:
         if p is None or p.color != self.turn:
             return 'illegal'
 
-        if (tr, tc) not in self.board.legal_moves(fr, fc):
+        if (fr, fc, tr, tc) not in self.all_legal_moves():
             return 'illegal'
 
+        tracker = self.repetition_tracker()
         captured = self.board.grid[tr][tc]
         self.history.append({
             'fr': fr, 'fc': fc, 'tr': tr, 'tc': tc,
@@ -82,6 +95,7 @@ class Game:
         })
         self.quiet_moves = 0 if captured else self.quiet_moves + 1
         self.board = self.board.apply_move(fr, fc, tr, tc)
+        tracker.push((fr, fc, tr, tc), self.board)
         self.turn = self.opponent(self.turn)
         self._evaluate_end()
         return 'ok'
@@ -91,6 +105,7 @@ class Game:
         if not self.history:
             return False
         last = self.history.pop()
+        self._repetition = None
         self.board = Board(last['board_state'])
         self.turn = last['prev_turn']
         self.status = last['prev_status']
@@ -112,14 +127,12 @@ class Game:
 
     def _evaluate_end(self):
         """每走一步后判断是否终局。"""
-        if not self.board.has_any_legal_move(self.turn):
+        if not self.repetition_tracker().legal_moves(self.board, self.turn):
             winner = self.opponent(self.turn)
-            tag = '将死' if self.board.is_in_check(self.turn) else '困毙'
+            tag = ('无合法变招' if self.board.has_any_legal_move(self.turn) else
+                   '将死' if self.board.is_in_check(self.turn) else '困毙')
         else:
-            key = (self.board.signature(), self.turn)
-            if sum(h['position_key'] == key for h in self.history) >= 2:
-                self.status = '和棋（三次重复局面）'
-            elif self.quiet_moves >= 120:
+            if self.quiet_moves >= 120:
                 self.status = '和棋（连续 120 步未吃子）'
             return
         self.status = f"{'红' if winner == 'r' else '黑'}方胜利！（{tag}）"

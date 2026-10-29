@@ -127,8 +127,9 @@ class ConsoleProgress:
                f'预计结束 {finish} ({s["estimate_source"]})']
         if self.unit=='微批': speed=f'微批 {s["units_per_second"]:.2f}/s | 局 {s["games_per_second"]:.2f}/s'
         else: speed=f'对局 {s["units_per_second"]:.3f}/s | 推理微批 {s["inference_batches_per_second"]:.2f}/s'
-        losses=' | '.join(f'{k}={s["metrics"][k]:.4f}' for k in ('L','棋谱','PPO','V','H') if k in s['metrics'])
-        extra=' | '.join(f'{k}={v}' for k,v in s['metrics'].items() if k not in ('L','棋谱','PPO','V','H'))
+        loss_keys=('总损失','策略损失','价值损失','PPO损失','动作熵损失','L','棋谱','PPO','V','H')
+        losses=' | '.join(f'{k}={s["metrics"][k]:.4f}' for k in loss_keys if k in s['metrics'])
+        extra=' | '.join(f'{k}={v}' for k,v in s['metrics'].items() if k not in loss_keys)
         lines.append(f'{speed} | 单步 {s["steps_per_second"]:.1f}/s')
         lines.append(losses or extra or '等待首个微批量')
         gpu=s['gpu']; util=gpu.get('utilization'); memory=gpu.get('memory_percent')

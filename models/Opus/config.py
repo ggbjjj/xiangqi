@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass
+import math
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,7 @@ class OpusConfig:
     tbptt_steps: int = 16
     checkpoint_attention: bool = True
     encoding: str = 'absolute-red-black-v1'
+    dropout: float = 0.1
 
     def __post_init__(self):
         object.__setattr__(self, 'heads', tuple(self.heads))
@@ -36,6 +38,8 @@ class OpusConfig:
         if any(type(n) is not int or n < 1 for n in sizes):
             raise ValueError('窗口、前馈维度与梯度截断步数必须为正整数')
         if self.encoding != 'absolute-red-black-v1': raise ValueError('不支持的输入或动作编码')
+        if type(self.dropout) not in (int,float) or not math.isfinite(self.dropout) or not 0 <= self.dropout <= 1:
+            raise ValueError('dropout 必须是 [0,1] 内的有限概率')
 
     @property
     def context_plies(self): return self.context_windows

@@ -115,14 +115,12 @@ def test_invalid_generation_micro_batch_rejected(k,m):
     with pytest.raises(ValueError): generation_micro_batch(k,m)
 
 
-def test_batched_generation_separates_histories_handles_finished_slots_and_tail(generator,tmp_path,monkeypatch):
+def test_batched_generation_separates_histories_handles_finished_slots_and_tail(generator,tmp_path,monkeypatch,assert_rollout_replay):
     import torch
     from encoder import move_to_action
     from selfplay.generator import Position
     from selfplay.store import list_runs,load_game
-    from training.data import SelfPlayDataset,collate_examples
-    from training.engine import iter_chunks
-    from training.loss import LossWeights,mixed_loss
+    from training.data import SelfPlayDataset
     calls=[]; steps=[]; games=[]
     original_forward=generator._forward_batch
     original_terminal=Position.terminal
@@ -151,10 +149,7 @@ def test_batched_generation_separates_histories_handles_finished_slots_and_tail(
     dataset=SelfPlayDataset(result['data_db'],result['run_id'])
     with torch.inference_mode():
         for i in range(len(dataset)):
-            batch=collate_examples([dataset[i]])
-            for start,stop,output in iter_chunks(generator.model,batch.x,batch.loss.lengths,2):
-                loss=mixed_loss(output,batch.loss.slice(start,stop),LossWeights.selfplay())
-                if loss.counts.ppo: assert float(loss.diagnostics['ratio_sum'])/loss.counts.ppo==pytest.approx(1.,abs=2e-5)
+            assert_rollout_replay(generator.model,result['data_db'],dataset[i])
 
 
 def test_training_progress_counts_real_steps_and_preserves_optimizer_update(tmp_path):

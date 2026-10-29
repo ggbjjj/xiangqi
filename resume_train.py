@@ -6,7 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from project_paths import ROOT
+from project_paths import ROOT,ENDGAME_DB
 
 
 def project_path(value):
@@ -24,12 +24,16 @@ def validate_record(config):
     from model_store import load_checkpoint
     model,meta,state = load_checkpoint(project_path(config['model_db']),config['checkpoint_id'],
                                        'cpu',resume=True)
+    if config.get('dropout') is not None: model.set_dropout(config['dropout'])
     if (meta['epoch'] != config['completed_epoch'] or meta['run_id'] != config['run_id']
             or meta['sha256'] != config['weights_sha256']):
         raise ValueError('检查点与保存的续训记录不一致')
     if state.get('T') != config['T'] or state.get('seed') != config['seed']:
         raise ValueError('续训 T 或 seed 与检查点不一致')
-    datasets = [GameDataset(config['T'],split,project_path(config['data']),config['limit_games'])
+    source=config.get('book_source','main')
+    if state.get('book_source','main')!=source: raise ValueError('续训棋谱读取方式与检查点不一致')
+    datasets = [GameDataset(config['T'] if split=='train' else config.get('validation_length',32),split,project_path(config['data']),config['limit_games'],
+                            source=source,endgame_db=project_path(config.get('endgame_db',ENDGAME_DB)))
                 for split in ('train','validation','test')]
     if not all(len(dataset) for dataset in datasets):
         raise ValueError('训练、验证或测试划分为空')
@@ -54,14 +58,19 @@ def validate_record(config):
         metrics = json.loads(meta['metrics_json'])
         validation = metrics['validation']
         rows = [{'epoch':meta['epoch'],'train_loss':metrics['train_loss'],
-                 'validation_loss':validation['loss'],'validation_top1':validation['top1'],
-                 'validation_top3':validation['top3'],'checkpoint_id':config['checkpoint_id']}]
+                 'validation_loss':validation['loss'],'validation_perplexity':validation.get('perplexity',''),
+                 'validation_L':validation.get('L',''),'validation_n':validation.get('n',''),
+                 'checkpoint_id':config['checkpoint_id']}]
     return meta,rows
 
 
 def training_arguments(config, epochs, output, device, precision):
     options = {'resume':config['checkpoint_id'],'epochs':epochs,'model-db':project_path(config['model_db']),
-               'data':project_path(config['data']),'output':output,'device':device,'precision':precision}
+               'data':project_path(config['data']),'output':output,'device':device,'precision':precision,
+               'book-source':config.get('book_source','main'),
+               'validation-length':config.get('validation_length',32),'ngram':config.get('ngram',16)}
+    if config.get('endgame_db') is not None: options['endgame-db']=project_path(config['endgame_db'])
+    if config.get('dropout') is not None: options['dropout']=config['dropout']
     for key in ('T','seed','batch_size','micro_batch','workers','cpu_threads','lr',
                 'weight_decay','clip_grad','limit_games'):
         options[key.replace('_','-')] = config[key]
@@ -78,6 +87,7 @@ def main(argv=None):
     parser.add_argument('--precision',choices=('auto','bf16','fp16','none'))
     parser.add_argument('--context-plies',type=int,
                         help='独立设置 KV 历史窗口；默认使用续训记录中的 context_plies，未记录时沿用检查点')
+    parser.add_argument('--dropout',type=float,help='覆盖残差 Dropout 概率，省略沿用续训记录/检查点')
     parser.add_argument('--check-only',action='store_true',help='仅用 CPU 核验参数、优化器和数据，不开始训练')
     args = parser.parse_args(argv)
     if args.context_plies is not None and args.context_plies <= 0:
@@ -86,6 +96,8 @@ def main(argv=None):
         config = json.loads(args.record.read_text(encoding='utf-8'))
         if args.context_plies is not None:
             config['context_plies'] = args.context_plies
+        if args.dropout is not None:
+            config['dropout'] = args.dropout
         epochs = config['default_total_epochs'] if args.epochs is None else args.epochs
         if epochs <= config['completed_epoch']:
             raise ValueError('目标总轮数必须大于已完成轮数')

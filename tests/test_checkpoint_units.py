@@ -178,20 +178,19 @@ def test_normal_end_commits_final_short_group_and_default_K_is_16(saved,tmp_path
     assert len(SelfPlayDataset(path,report['run_id']))==3
 
 
-def test_selfplay_reader_applies_T_including_prefix_without_losing_ppo_context(saved,tmp_path):
+def test_selfplay_reader_splits_by_C_without_counting_prefix(saved,tmp_path):
     generator=_generator(saved)
     generator.rules=SelfPlayRules(max_plies=3)
     prefix=[move_to_action((6,0,5,0))]
     report=generator.generate(1,path=tmp_path/'reader.sqlite3',prefix=prefix)
-    for T in (2,6):
-        sample=SelfPlayDataset(report['data_db'],report['run_id'],T=T)[0]
-        batch=collate_examples([sample])
-        length=min(T,4)
-        assert batch.x.shape==(T,1,15,10,9) and batch.loss.lengths.tolist()==[length]
-        assert batch.loss.counts().ppo==length-1 and not batch.loss.selfplay_mask[0,0]
-        if T>length: assert not batch.x[length:].count_nonzero()
-    with pytest.raises(ValueError,match='暖启动'):
-        SelfPlayDataset(report['data_db'],report['run_id'],T=1)[0]
+    for C in (1,2,6):
+        dataset=SelfPlayDataset(report['data_db'],report['run_id'],C=C)
+        samples=[dataset[i] for i in range(len(dataset))]
+        batch=collate_examples(samples)
+        lengths=[min(C,3-start) for start in range(0,3,C)]
+        assert batch.x.shape==(C,len(samples),15,10,9) and batch.loss.lengths.tolist()==lengths
+        assert batch.loss.counts().ppo==3 and batch.loss.selfplay_mask[0].all()
+        for sample in samples: assert not sample.x[sample.length:].count_nonzero()
 
 
 def test_bulk_save_rolls_back_entire_group(saved,tmp_path):

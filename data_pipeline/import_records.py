@@ -63,7 +63,7 @@ def import_raw(conn, survey):
             records = [(rel,i,raw,'cbl21','pending_decoder') for i,raw in enumerate(cbl_records(data))]
         conn.executemany('INSERT OR IGNORE INTO raw_records VALUES (?,?,?,?,?,?,?,?,?,NULL)',
             [(digest(f'{source}:{name}:{i}'.encode()),source,name,i,raw,fmt,digest(raw),status,
-              'CBL 主线解码尚未实现' if status == 'pending_decoder' else None)
+              '等待 CBL 主线解码与规则校验' if status == 'pending_decoder' else None)
              for name,i,raw,fmt,status in records])
         conn.commit()
         print(f'原始文件入库 {rel} ({len(records)} 局)', flush=True)
@@ -132,6 +132,10 @@ def main(argv=None):
                   'plies':conn.execute('SELECT sum(ply_count) FROM games').fetchone()[0]}
         (args.db.parent/'import_report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
         print(json.dumps(report,ensure_ascii=False,indent=2))
+        if conn.execute("SELECT 1 FROM raw_records WHERE format='cbl21' AND status='pending_decoder' LIMIT 1").fetchone():
+            # The merger makes a consistent backup before adding decoded rows.
+            from .merge_cbl import main as merge_cbl_main
+            merge_cbl_main(['--db',str(args.db),'--no-plot'])
     finally:
         conn.close()
 

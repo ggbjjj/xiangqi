@@ -25,7 +25,7 @@ def main(argv=None):
     p.add_argument('--micro-batch',type=int,help='GPU 同时生成的局数：2 的幂且整除 K；默认选择不超过 16 的最大可用值')
     p.add_argument('--max-plies',type=int,default=1000)
     p.add_argument('--quiet-plies',type=int,default=120)
-    p.add_argument('--repetition',type=int,default=3)
+    p.add_argument('--repetition',type=int,default=3,help='相同循环连续重复的局面次数；默认3，下一走方须变招')
     p.add_argument('--temperature',type=float,default=1.2)
     p.add_argument('--epsilon',type=float,default=.02)
     p.add_argument('--seed',type=int,default=42)

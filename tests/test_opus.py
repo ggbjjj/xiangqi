@@ -112,10 +112,12 @@ def test_chunk_detach_keeps_forward_memory_but_stops_cross_chunk_gradients():
     torch.manual_seed(89)
     net=tiny().train(); net.set_context_windows((4,4,4,4,4))
     x=torch.randn(4,1,15,10,9,requires_grad=True); lengths=torch.tensor([4])
+    torch.manual_seed(1234)
     full=net(x)
     full.value_logits[-1,0,0].backward()
     assert x.grad[0].abs().sum()>0
     net.zero_grad(set_to_none=True); x.grad=None
+    torch.manual_seed(1234)
     chunks=net.forward_chunks(x,lengths)
     first=next(chunks); second=next(chunks)
     assert first[:2]==(0,2) and second[:2]==(2,4)
@@ -133,6 +135,7 @@ def test_recompute_and_chunk_backward_accumulation_match():
     a,b=tiny(True).train(),tiny(False).train(); b.load_state_dict(a.state_dict())
     x=torch.randn(5,1,15,10,9); lengths=torch.tensor([5])
     for net in (a,b):
+        torch.manual_seed(1234)
         for start,stop,out in net.forward_chunks(x,lengths):
             loss=out.policy_logits[...,17].mean()+out.value_logits[...,0].mean()
             loss.backward()
@@ -215,10 +218,11 @@ def test_opus_training_chunks_and_saved_configuration(tmp_path,monkeypatch):
     train.main(['--architecture','Opus','--model-db',str(root),'--data',str(data),
                 '--output',str(output),'--run-name','opus-smoke','--epochs','1','--T','5',
                 '--tbptt-steps','2','--context-windows','1','2','3','2','3',
-                '--batch-size','1','--micro-batch','1','--device','cpu','--precision','none','--smoke'])
+                '--dropout','0.3','--batch-size','1','--micro-batch','1','--device','cpu','--precision','none','--smoke'])
     saved=next(r for r in list_versions(root) if r['architecture']=='Opus-5')
     model,meta,state=load_checkpoint(root,saved['checkpoint_id'],resume=True)
     assert model.config.tbptt_steps==2 and model.config.context_windows==(1,2,3,2,3)
+    assert model.config.dropout==.3
     assert state['T']==5 and state['tbptt_steps']==2 and meta['global_step']==1
     # Only one optimizer update after both graph chunks; no value labels in books.
     assert all(int(s['step'])==1 for s in state['optimizer']['state'].values())

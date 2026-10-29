@@ -4,6 +4,7 @@ from pathlib import Path
 
 ROOT = Path(os.environ.get('XIANGQI_HOME', Path(__file__).resolve().parent)).resolve()
 DATA_DB = ROOT / 'Data' / 'dataset.sqlite3'
+ENDGAME_DB = ROOT / 'Data' / 'endgames.sqlite3'
 MODEL_CATALOG = ROOT / 'ModelParameters'
 LEGACY_MODEL_DB = MODEL_CATALOG / 'models.sqlite3'
 HAIKU_MODEL_DB = MODEL_CATALOG / 'HaiKu' / 'models.sqlite3'

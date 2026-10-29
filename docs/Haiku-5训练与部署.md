@@ -29,30 +29,23 @@ flowchart TD
     T --> L[按有效步数掩蔽 CE → 有效步平均]
 ```
 
-残差严格使用 LN(x + GELU(AttentionOutput))，随后 LN(h + FFN(h))。行列位置嵌入与内容先分别做无仿射 LayerNorm，再用可学习 α 融合；每个核心独立 β，在该核心历史与交叉查询入口共用。时间编码为正弦/余弦，范围 [-1,1]。空间交叉查询由 LN_qmix(LN_qcontent(S)+βe_t) 独立投影；历史末层 E 已经过 FFN 和 LN，直接投影成交叉 K/V。
+残差使用 `h = LN1(x + Dropout(GELU(AttentionOutput)))`，随后 `LN2(h + Dropout(FFN(h)))`。FFN 为 `Linear(128,512) → GELU → Linear(512,128)`。历史 2 层、空间 2 层与交叉 1 层各含两个 Dropout，每核心共 10 个、全网 30 个，默认概率 0.1，可用 `--dropout` 设置。监督训练启用，验证和对弈关闭；共用混合训练接口的有效 PPO 逻辑批量也关闭，保证采样概率可重放。Dropout 不增加参数，旧配置缺失此项时使用 0.1；旧权重和优化器参数顺序兼容，eval 输出与原模型相同。
 
-每份核心两个 KV_self 和一个 KV_cross，全网共九对缓存。逐时间步仅追加已发生局面，当前 90 个 query 可看窗口内当前及过去所有位置，因此 SDPA 不使用逐 token 下三角遮蔽。填充的历史 key 被单独屏蔽，填充 query 输出置零。缓存是局部对象，换 batch 重新创建；保留梯度，不 detach。注意力重计算在反向重建逐步拼接的 K/V，减少保存中间张量。`--context-plies` 独立设置最大缓存窗口（局面数，包含当前局面），新训练默认 120，与 `--T` 无关；走棋超出窗口会逐整局面淘汰最老的 90 个 token，时间索引继续递增。窗口可大于或小于 T。训练数据超过 T 时只保留最初 T 步，因此很长历史的泛化仍需另外评估。
+更新后的 [HaiKu 完整网络图](diagrams/haiku-5-dropout.svg) 和 [共享核心逐层图](diagrams/shared-core-dropout-detailed.svg) 提供 SVG，PNG 见 [图片目录](diagrams/README.md)。核心图展开全部五个 Block、Q/K/V 投影、缓存、激活、FFN、残差与 10 个 Dropout。
+
+行列位置嵌入与内容先分别做无仿射 LayerNorm，再用可学习 α 融合；每个核心独立 β，在该核心历史与交叉查询入口共用。时间编码为正弦/余弦，范围 [-1,1]。空间交叉查询由 LN_qmix(LN_qcontent(S)+βe_t) 独立投影；历史末层 E 已经过 FFN 和 LN，直接投影成交叉 K/V。
+
+每份核心两个 KV_self 和一个 KV_cross，全网共九对缓存。逐时间步仅追加已发生局面，当前 90 个 query 可看窗口内当前及过去所有位置，因此 SDPA 不使用逐 token 下三角遮蔽。填充的历史 key 被单独屏蔽，填充 query 输出置零。缓存是局部对象，每个新微批量/训练片段重新创建空缓存，时间索引归零；批量大小相同也不复用上一批。共用训练入口在同一微批内每段反传后 detach 缓存，仅截断梯度，保留 K/V 数值和连续时间；旧 `train.py` 的 HaiKu 在片段内完整反传。梯度累积不会累计缓存，批内不同棋局沿 B 维隔离。直接使用 `forward_step` 时由调用方在新局/新批传入 `cache=None`。
+
+注意力重计算在反向重建逐步拼接的 K/V，减少保存中间张量。`--context-plies` 独立设置最大缓存窗口（局面数，包含当前局面），新模型与古谱训练默认 **30**，与 `--T` 无关；片段内走棋超出窗口会逐整局面淘汰最老的 90 个 token，时间索引继续递增。窗口可大于或小于 T。古谱超过 T 时连续切成多个片段，尾段补零，每段恢复原局对应棋盘与规则历史，但网络历史从片段起点建立，因此超出片段长度的历史泛化仍需另外评估。
 
 ## 选定的软件与 GPU
 
-固定 **Python 3.12 + PyTorch 2.9.1**。本机已安装 `torch 2.9.1+cpu` 进行验证；远程使用 **2.9.1+cu128（CUDA 12.8）**。这是可复现的选定版本，不宣称是最新版本；不需要 torchvision 或 torchaudio。[PyTorch 官方版本安装表](https://pytorch.org/get-started/previous-versions/)
+固定 **Python 3.12 + PyTorch 2.9.1**。本机使用 `torch 2.9.1+cpu` 验证；GPU 使用 **2.9.1+cu128（CUDA 12.8）**，不需要 torchvision 或 torchaudio。完整的型号表、旧卡限制、CUDA 最低版本含义、FP16/BF16 与排错说明已统一整理为独立文件：[GPU 与 CUDA 兼容说明](../GPU与CUDA兼容说明.md)。
 
-以下为本方案可选的常用 NVIDIA GPU。显存容量是选购参考，不能视为对本网络 batch=128 一次装入显存的保证。实际峰值受 T、微批量、精度、SDPA 后端影响，需要在服务器上试跑。
+当前锁文件中的 CUDA Runtime 为 12.8.90，按 CUDA 12.8 Update 1 配套驱动基线部署：Linux **570.124.06**、Windows **572.61** 或更高，同时满足显卡本身的驱动要求。这与 CUDA 12.x 带限制的小版本兼容下限是不同概念，详见新文档及 [NVIDIA 官方驱动表](https://docs.nvidia.com/cuda/archive/12.8.1/cuda-toolkit-release-notes/index.html#cuda-driver)。
 
-| GPU 示例 | Compute Capability | 使用建议 |
-|---|---|---|
-| A100 40/80GB、A30 | 8.0 | 远程训练，bf16；A100 80GB 更宽裕 |
-| RTX 3090/3090 Ti 24GB、RTX A6000 48GB、A40 48GB | 8.6 | 可使用 cu128，微批量从 1 开始 |
-| RTX 4090 24GB、L40/L40S 48GB、L4 24GB | 8.9 | 可使用 cu128，优先 bf16 |
-| H100/H200 | 9.0 | 可使用 cu128，适合远程训练 |
-| RTX 5090 32GB、B200 | 12.0 / 10.0 | 需支持 Blackwell 的构建与对应新驱动，使用 cu128，先运行环境自检 |
-| T4、RTX 2080 Ti | 7.5 | 可运行，显存/速度更受限制，使用 fp16 或 fp32 |
-
-GPU 能力号依据 [NVIDIA 官方表](https://developer.nvidia.com/cuda/gpus)。CUDA 与 GPU 架构对应见 [NVIDIA 支持矩阵](https://docs.nvidia.com/datacenter/tesla/drivers/latest/cuda-toolkit-driver-and-architecture-matrix.html)。不把旧卡型号笼统归入本推荐环境。
-
-建议 Linux 驱动 **570.26 或更高**；Windows **570.65 或更高**，新 GPU 还要满足其自身驱动要求。这里采用 CUDA 12.8 GA 配套驱动基线，避免依赖较旧驱动的兼容模式；不是声称所有 CUDA 12.x 程序都要求这个最低版本。[CUDA 12.8 官方驱动表](https://docs.nvidia.com/cuda/archive/12.8.0/cuda-toolkit-release-notes/index.html)
-
-官方 cu128 wheel 会安装所需 CUDA 用户态运行库，运行本项目不必另装系统 CUDA Toolkit；NVIDIA 驱动仍需在主机安装。`nvidia-smi` 的 CUDA 数字是驱动能支持的最高版本，不代表当前 PyTorch wheel 的版本；查看 `torch.version.cuda`。
+预编译 cu128 wheel 及其依赖提供所需 CUDA 用户态运行库，运行本项目不必另装系统 CUDA Toolkit；NVIDIA 驱动仍需安装。`nvidia-smi` 的 CUDA 数字不代表当前 PyTorch wheel 的版本，当前构建查看 `torch.version.cuda`。没有逐型号 GPU 实测结果时，不承诺特定批量的显存或吞吐。
 
 现在 CPU 与 GPU 环境均由 uv 管理，共用同一份锁文件；按照 [uv 官方 PyTorch 配置方式](https://docs.astral.sh/uv/guides/integration/pytorch/)，用互斥 extras 从官方 CPU/cu128 索引选择同一版本。原 `neural` 是 `cpu` 的兼容别名。
 
@@ -106,7 +99,7 @@ uv run --locked --extra gpu xiangqi-train --epochs 10 --T 120 --batch-size 128 -
 
 默认 T=120 是单步总数，即红黑合计 120 步，不是 120 回合；较短棋谱全部时间步补零。公共 `iter_game_batches(T)` 返回 X、one-hot Y、lengths；训练入口使用等价的整数动作标签减少 CPU/GPU 标签存储。模型仍输出 [T,B,8100]，CE 仍按有效时间步平均。标签非法会明确报错，填充不会造成 softmax 全负无穷或 0×负无穷。
 
-例如 `--T 1000 --context-plies 120` 表示训练序列最多 1000 步、K/V 滑动窗口仅 120 个局面。窗口写入训练日志配置与检查点模型配置，推理加载后继续使用该窗口。限制缓存长度不会切断旧计算图；当前未实现分段反传/TBPTT，长序列训练仍需控制微批量和显存。
+例如 `--T 1000 --context-plies 30` 表示训练序列最多 1000 步、K/V 滑动窗口仅 30 个局面。窗口写入训练日志配置与检查点模型配置，推理加载后继续使用该窗口。限制缓存长度本身不会切断旧计算图；推荐共用 `python -m training` 入口按 `--tbptt-steps` 分段反传，长序列训练仍需控制微批量和显存。
 
 每轮选择验证 CE 最低的 `best`；训练结束加载 best，仅此时计算测试集 CE、Top-1 和 Top-3 命中率。命中率衡量是否复现棋谱走法，不等于胜率或棋力等级。数据划分详见 Data/README.md。
 
@@ -136,7 +129,7 @@ uv run --locked --extra gpu xiangqi-train --resume 检查点ID --epochs 20 --T 1
 
 `--epochs` 是总轮数。恢复模型、优化器、GradScaler、随机数状态；须使用相同数据、T 和 seed。当前按 epoch 保存，意外中断后从最后已完成 epoch 重跑，不保证恢复中断 epoch 内的确切 batch。`--evaluate 检查点ID` 可单独评估测试集。
 
-续训及评估未指定 `--context-plies` 时沿用检查点原窗口（旧检查点兼容），显式指定时仅覆盖本次模型的缓存窗口，不改写原检查点；续训保存的新检查点会记住新窗口。窗口变更会重置 best 损失比较，避免最终测试误用旧窗口的 best。专用入口也支持 `python resume_train.py --epochs 3 --context-plies 64`，或在其记录 JSON 中设置 `context_plies`；命令行优先。
+旧 `train.py --resume` 及评估未指定 `--context-plies` 时沿用检查点原窗口，显式指定时只覆盖本次模型，不改写原检查点；新检查点会记住新窗口。推荐的 `python -m training --family HaiKu --source books` 和旧入口非 resume 的古谱训练默认使用 30，即使起始权重保存的是 120。窗口变更时旧入口重置 best 比较；共用入口每次独立评优。当前 `TrainingRecords/current_resume.json` 已指定 30，专用入口也可用 `python resume_train.py --epochs 3 --context-plies 30` 覆盖，命令行优先。自弈/混合默认沿用采样窗口，PPO 不允许与采样时窗口不一致。
 
 ## 游戏中的提示
 

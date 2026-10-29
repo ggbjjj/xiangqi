@@ -1,0 +1,160 @@
+{
+  "metric": "mean_slice_perplexity",
+  "metric_version": "book-slice-ppl-sliding-context-v1",
+  "perplexity": 16.5329975990596,
+  "median_perplexity": 12.529810406222095,
+  "min_perplexity": 2.675172561711413,
+  "max_perplexity": 58.64297921958508,
+  "corpus_perplexity": 12.84012685791396,
+  "loss": 2.8977731994994267,
+  "games": 95,
+  "source_games": 32,
+  "segments": 95,
+  "steps": 2564,
+  "padding_steps": 476,
+  "L": 32,
+  "n": 16,
+  "padding_probability": 0.5,
+  "book_selection": {
+    "mode": "main",
+    "label": "主棋谱库",
+    "databases": {
+      "main": "D:\\象棋\\Data\\dataset.sqlite3"
+    },
+    "games": 32,
+    "segments": 95,
+    "by_source": {
+      "main": {
+        "games": 32,
+        "segments": 95
+      }
+    },
+    "duplicate_games": 0,
+    "value_conflicts": 0,
+    "reader_version": "multi-book-sources-v1"
+  },
+  "family": "Opus",
+  "parameter_id": 2,
+  "checkpoint_id": "bcdb8df21f5048a88c28f34efb949b8f",
+  "weights_sha256": "c5704cbbb71b26ff062edc4352a3de25d173824dae7e56d26f2218abdcad2f63",
+  "split": "validation",
+  "limit_games": 32,
+  "current_validation_counts": {
+    "main": {
+      "mode": "main",
+      "label": "主棋谱库",
+      "databases": {
+        "main": "D:\\象棋\\Data\\dataset.sqlite3"
+      },
+      "games": 1576,
+      "segments": 4682,
+      "by_source": {
+        "main": {
+          "games": 1576,
+          "segments": 4682
+        }
+      },
+      "duplicate_games": 0,
+      "value_conflicts": 0,
+      "reader_version": "multi-book-sources-v1"
+    },
+    "endgames": {
+      "mode": "endgames",
+      "label": "残局库",
+      "databases": {
+        "endgames": "D:\\象棋\\Data\\endgames.sqlite3"
+      },
+      "games": 112,
+      "segments": 149,
+      "by_source": {
+        "endgames": {
+          "games": 112,
+          "segments": 149
+        }
+      },
+      "duplicate_games": 0,
+      "value_conflicts": 0,
+      "reader_version": "multi-book-sources-v1"
+    },
+    "both": {
+      "mode": "both",
+      "label": "主棋谱库＋残局库",
+      "databases": {
+        "main": "D:\\象棋\\Data\\dataset.sqlite3",
+        "endgames": "D:\\象棋\\Data\\endgames.sqlite3"
+      },
+      "games": 1687,
+      "segments": 4830,
+      "by_source": {
+        "main": {
+          "games": 1576,
+          "segments": 4682
+        },
+        "endgames": {
+          "games": 111,
+          "segments": 148
+        }
+      },
+      "duplicate_games": 1,
+      "value_conflicts": 0,
+      "reader_version": "multi-book-sources-v1"
+    }
+  },
+  "data_sha256": {
+    "dataset.sqlite3": "d1087bf3ea0b690dc4302cec7ecf94cf07c41a89826af38c67e4fad87ce261e6",
+    "endgames.sqlite3": "f3ed030a6f2e17158c024da09a7c4c6c6de8bb0d470ede50b3fc43cd1d45bc2c"
+  },
+  "scope_note": "当前主库 validation 划分按原局 ID 排序的前 32 局，仅为评分及图片预览；不是完整验证集指标，也不是旧训练记录的重算结果。",
+  "histogram": {
+    "total": 95,
+    "bins": [
+      {
+        "lower": 1,
+        "upper": 2,
+        "count": 0,
+        "label": "[1, 2)",
+        "percent": 0.0
+      },
+      {
+        "lower": 2,
+        "upper": 4,
+        "count": 7,
+        "label": "[2, 4)",
+        "percent": 7.368421052631579
+      },
+      {
+        "lower": 4,
+        "upper": 8,
+        "count": 19,
+        "label": "[4, 8)",
+        "percent": 20.0
+      },
+      {
+        "lower": 8,
+        "upper": 16,
+        "count": 32,
+        "label": "[8, 16)",
+        "percent": 33.68421052631579
+      },
+      {
+        "lower": 16,
+        "upper": 32,
+        "count": 23,
+        "label": "[16, 32)",
+        "percent": 24.210526315789473
+      },
+      {
+        "lower": 32,
+        "upper": 64,
+        "count": 14,
+        "label": "[32, 64)",
+        "percent": 14.736842105263158
+      }
+    ]
+  },
+  "artifacts": {
+    "samples": "D:\\象棋\\TrainingRecords\\Opus\\opus-mixed-20261028-094701-460939\\validation-L32-n16-preview\\perplexities.jsonl",
+    "png": "D:\\象棋\\TrainingRecords\\Opus\\opus-mixed-20261028-094701-460939\\validation-L32-n16-preview\\perplexity-histogram.png",
+    "svg": "D:\\象棋\\TrainingRecords\\Opus\\opus-mixed-20261028-094701-460939\\validation-L32-n16-preview\\perplexity-histogram.svg"
+  }
+}

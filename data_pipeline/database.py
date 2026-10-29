@@ -20,6 +20,11 @@ CREATE TABLE IF NOT EXISTS raw_records (
  sha256 TEXT NOT NULL, status TEXT NOT NULL, error TEXT, game_id TEXT REFERENCES games(game_id),
  UNIQUE(source_id,source_path,record_index));
 CREATE INDEX IF NOT EXISTS raw_status ON raw_records(status);
+CREATE INDEX IF NOT EXISTS raw_game ON raw_records(game_id);
+CREATE TABLE IF NOT EXISTS decoded_records (
+ raw_id TEXT PRIMARY KEY REFERENCES raw_records(raw_id), decoder_version TEXT NOT NULL,
+ start_fen TEXT, moves_json TEXT, ply_count INTEGER CHECK(ply_count>=0), result TEXT,
+ metadata_json TEXT NOT NULL, validation_error TEXT);
 CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 """
 

@@ -43,9 +43,11 @@ def action_to_move(action):
     return from_sq // COLS, from_sq % COLS, to_sq // COLS, to_sq % COLS
 
 
-def legal_action_mask(board, turn):
-    """返回长度 8100 的 bool 数组，合法动作为 True。"""
+def legal_action_mask(board, turn, history=None, *, repetition=None):
+    """Geometry plus consecutive-cycle exclusions when history is supplied."""
+    from repetition import RepetitionTracker
+    tracker = repetition or RepetitionTracker.from_history(board, turn, history)
     mask = np.zeros(NUM_ACTIONS, dtype=bool)
-    for move in board.all_legal_moves(turn):
+    for move in tracker.legal_moves(board, turn):
         mask[move_to_action(move)] = True
     return mask

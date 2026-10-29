@@ -2,6 +2,7 @@ import copy
 from dataclasses import replace
 import json
 import math
+import random
 import sqlite3
 
 import pytest
@@ -99,7 +100,7 @@ def test_source_specific_whole_batch_denominators_match_split_gradients():
     policy=torch.randn(4,2,8100,requires_grad=True); value=torch.randn(4,2,3,requires_grad=True)
     split_policy=policy.detach().clone().requires_grad_(); split_value=value.detach().clone().requires_grad_()
     weights=LossWeights.mixed(); counts=data.counts()
-    assert counts==LossCounts(3,3,3,3)
+    assert counts==LossCounts(3,3,3,6)
     result=mixed_loss(ModelOutput(policy,value),data,weights); result.total.backward()
     total=0.
     for start,stop in ((0,2),(2,4)):
@@ -130,23 +131,23 @@ def rollout(tmp_path):
                          version_name='Opus-test.initial',description='test initial')
     generator=SelfPlayGenerator.from_version('Opus','Opus-test.initial',model_db=db,
                    rules=SelfPlayRules(max_plies=5),exploration=Exploration(1.2,.02))
-    data=tmp_path/'selfplay.sqlite3'; prefix=[move_to_action((6,0,5,0))]
-    report=generator.generate(2,path=data,prefix=prefix)
+    data=tmp_path/'selfplay.sqlite3'
+    report=generator.generate(2,path=data)
     return model,db,ident,data,report
 
 
-def test_generator_freezes_snapshot_pins_version_and_replays_prefix_exactly(rollout):
+def test_generator_freezes_snapshot_pins_version_and_replays_prefix_exactly(rollout,assert_rollout_replay):
     model,db,ident,path,report=rollout
+    generator=SelfPlayGenerator.from_version('Opus',ident,model_db=db,
+                   rules=SelfPlayRules(max_plies=5),exploration=Exploration(1.2,.02))
+    report=generator.generate(2,path=path,prefix=[move_to_action((6,0,5,0))])
     assert len(report['game_ids'])==2 and model.training and all(p.requires_grad for p in model.parameters())
     ds=SelfPlayDataset(path,report['run_id'],family='Opus')
     sample=ds[0]; batch=collate_examples([sample])
     assert batch.loss.counts()==LossCounts(0,5,5,5)
-    assert not batch.loss.selfplay_mask[0,0] and batch.loss.value_targets[0,0]==-100
+    assert batch.loss.selfplay_mask[0,0] and sample.length==5 and len(sample.x)==128
     loaded,meta,_=load_checkpoint(db,ident); loaded.eval()
-    for start,stop,output in iter_chunks(loaded,batch.x,batch.loss.lengths,2):
-        loss=mixed_loss(output,batch.loss.slice(start,stop),LossWeights.selfplay())
-        if loss.counts.ppo:
-            assert float(loss.diagnostics['ratio_sum'])/loss.counts.ppo==pytest.approx(1.,abs=2e-5)
+    assert_rollout_replay(loaded,path,sample)
     game,run,steps=load_game(path,ds.ids[0])
     assert game['result']=='1/2-1/2' and game['termination']=='max_plies'
     assert run['checkpoint_id']==ident and run['version_name']=='Opus-test.initial'
@@ -219,7 +220,7 @@ def test_logical_batch_updates_once_and_rejects_other_behavior_version(rollout):
     assert any(not torch.equal(v,model.value_head.state_dict()[k]) for k,v in old_value.items())
 
 
-def test_rules_distinguish_repetition_quiet_limit_and_step_cap():
+def test_rules_distinguish_repetition_change_quiet_limit_and_step_cap():
     state=Position(STANDARD_FEN,SelfPlayRules(max_plies=1))
     state.move(move_to_action((6,0,5,0)),state.terminal(0)[1])
     assert state.terminal(1)[0]==('1/2-1/2','max_plies')
@@ -229,10 +230,12 @@ def test_rules_distinguish_repetition_quiet_limit_and_step_cap():
     state=Position(STANDARD_FEN,SelfPlayRules())
     moves=((9,1,7,2),(0,1,2,2),(7,2,9,1),(2,2,0,1))*2
     for move in moves: state.move(move_to_action(move),state.terminal(0)[1])
-    assert state.terminal(8)[0]==('1/2-1/2','repetition')
+    terminal,legal=state.terminal(8)
+    assert terminal is None and not legal[move_to_action(moves[0])]
 
 
-def test_mixed_cli_roundtrip_saves_new_version_without_overwriting_base(rollout,tmp_path):
+@pytest.mark.parametrize('C',[2,128])
+def test_mixed_cli_roundtrip_saves_new_version_without_overwriting_base(rollout,tmp_path,C):
     from training.__main__ import main
     from data_pipeline.database import connect
     model,db,ident,path,report=rollout
@@ -243,11 +246,27 @@ def test_mixed_cli_roundtrip_saves_new_version_without_overwriting_base(rollout,
     base_sha=load_checkpoint(db,ident)[1]['sha256']
     result=main(['--family','Opus','--version','Opus-test.initial','--model-db',str(db),
                  '--source','mixed','--book-db',str(book),'--selfplay-db',str(path),
-                 '--rollout-run',report['run_id'],'--T','2','--epochs','1','--batch-size','3','--micro-batch','1',
-                 '--tbptt-steps','2','--output',str(tmp_path/'runs'),'--device','cpu','--cpu-threads','2','--smoke'])
-    assert result['global_step']==1 and len(list_versions(db))==2
+                 '--rollout-run',report['run_id'],'--T','2','--C',str(C),'--epochs','1','--batch-size','3','--micro-batch','1',
+                 '--tbptt-steps','2','--dropout','0.25','--output',str(tmp_path/'runs'),'--device','cpu','--cpu-threads','2','--smoke'])
+    updates=math.ceil((1+2*math.ceil(5/C))/3)
+    assert result['global_step']==updates and len(list_versions(db))==2
     assert load_checkpoint(db,ident)[1]['sha256']==base_sha
     trained,meta,state=load_checkpoint(db,result['checkpoints'][0],resume=True)
     assert meta['stage']=='mixed' and not meta['published'] and trained.config.tbptt_steps==2
+    assert trained.config.dropout==.25
     assert state['behavior_checkpoint_id']==ident and state['rollout_run']==report['run_id']
-    assert all(int(s['step'])==1 for s in state['optimizer']['state'].values())
+    assert state['C']==C
+    config=json.loads((tmp_path/'runs'/result['run_id']/'config.json').read_text(encoding='utf-8'))
+    assert config['T']==2 and config['C']==C and config['selfplay_games']==2
+    assert config['dropout']==config['model']['dropout']==.25
+    assert config['selfplay_segments']==2*math.ceil(5/C)
+    metrics=[json.loads(line) for line in (tmp_path/'runs'/result['run_id']/'metrics.jsonl').read_text(encoding='utf-8').splitlines()]
+    assert sum(m['counts']['ppo'] for m in metrics)==10
+    assert sum(m['counts']['book'] for m in metrics)==1
+    indices=list(range(config['training_samples']));random.Random(43).shuffle(indices)
+    value_updates=sum(any(i>0 for i in indices[start:start+3]) for start in range(0,len(indices),3))
+    # A book-only batch with an unknown outcome updates the policy path only.
+    parameter_ids=state['optimizer']['param_groups'][0]['params']
+    for (name,_),parameter_id in zip(trained.named_parameters(),parameter_ids):
+        expected=value_updates if name.startswith(('cores.3.','cores.4.','bridge_','value_head.')) else updates
+        assert int(state['optimizer']['state'][parameter_id]['step'])==expected

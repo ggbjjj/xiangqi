@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="4080" height="3700" viewBox="0 0 2040 1850" role="img">
+<title>Opus-5 / 五核心策略与价值网络</title><desc>每核心 10 个 Dropout，全网 50 个，p=0.1；两次跨分支单头融合保持原有连接</desc>
+<rect width="2040" height="1850" fill="white"/>
+<text x="64" y="58" fill="#172D3A" font-size="40" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="start" dominant-baseline="central">Opus-5 / 五核心策略与价值网络</text>
+<text x="66" y="110" fill="#566A75" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">每核心 10 个 Dropout，全网 50 个，p=0.1；两次跨分支单头融合保持原有连接</text>
+<rect x="430" y="175" width="1180" height="110" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="1020.0" y="215.5" fill="#285AA8" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">局面输入 [B,15,10,9] → 共享 CNN</text>
+<text x="1020.0" y="244.5" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">Conv 3×3:15→64 → GELU → Conv 3×3:64→64 → GELU → Conv 1×1:64→128</text>
+<rect x="430" y="335" width="1180" height="115" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="1020.0" y="378.0" fill="#285AA8" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">重排 [B,90,128] → 内容/位置融合 Z_t</text>
+<text x="1020.0" y="407.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">Z_t = LN_content(CNN 特征) + α × LN_position(RowEmbedding + ColEmbedding)</text>
+<polyline points="1020,285 1020,335" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1020,335 1025.0,324.0 1015.0,324.0" fill="#285AA8"/>
+<polyline points="1020,450 1020,485 495,485 495,530" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="495,530 500.0,519.0 490.0,519.0" fill="#137C75"/>
+<polyline points="1020,485 1545,485 1545,530" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1545,530 1550.0,519.0 1540.0,519.0" fill="#7751A7"/>
+<text x="145" y="495" fill="#137C75" font-size="23" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="start" dominant-baseline="central">策略分支</text>
+<text x="1195" y="495" fill="#7751A7" font-size="23" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="start" dominant-baseline="central">价值分支</text>
+<rect x="105" y="530" width="780" height="140" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="495.0" y="571.0" fill="#137C75" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">核心 1 → F1</text>
+<text x="495.0" y="600.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">16 头；KV 窗口 10；10 个 Dropout</text>
+<text x="495.0" y="629.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">历史 ×2 / 空间 ×2 / 交叉 ×1；每个核心参数独立</text>
+<rect x="105" y="760" width="780" height="140" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="495.0" y="801.0" fill="#137C75" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">核心 2 → F2</text>
+<text x="495.0" y="830.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">8 头；KV 窗口 20；10 个 Dropout</text>
+<text x="495.0" y="859.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">历史 ×2 / 空间 ×2 / 交叉 ×1；每个核心参数独立</text>
+<polyline points="495,670 495,760" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="495,760 500.0,749.0 490.0,749.0" fill="#137C75"/>
+<rect x="105" y="1220" width="780" height="140" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="495.0" y="1261.0" fill="#137C75" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">核心 3 → F3</text>
+<text x="495.0" y="1290.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">4 头；KV 窗口 30；10 个 Dropout</text>
+<text x="495.0" y="1319.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">历史 ×2 / 空间 ×2 / 交叉 ×1；每个核心参数独立</text>
+<polyline points="495,900 495,1220" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="495,1220 500.0,1209.0 490.0,1209.0" fill="#137C75"/>
+<rect x="1155" y="530" width="780" height="140" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1545.0" y="571.0" fill="#7751A7" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">核心 4 → F4</text>
+<text x="1545.0" y="600.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">8 头；KV 窗口 20；10 个 Dropout</text>
+<text x="1545.0" y="629.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">输入与核心 1 相同，均为 Z_t</text>
+<rect x="1155" y="760" width="780" height="155" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1545.0" y="808.5" fill="#7751A7" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">跨分支融合 A → P_t</text>
+<text x="1545.0" y="837.5" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">Q = Linear(F4)；K,V = 各自 Linear(F2)</text>
+<text x="1545.0" y="866.5" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">单头 SDPA；只访问当前 90 个位置</text>
+<polyline points="1545,670 1545,760" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1545,760 1550.0,749.0 1540.0,749.0" fill="#7751A7"/>
+<polyline points="885,830 1155,830" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1155,830 1144.0,825.0 1144.0,835.0" fill="#137C75"/>
+<text x="1020" y="798" fill="#137C75" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">F2 → K,V</text>
+<rect x="1155" y="1000" width="780" height="140" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1545.0" y="1041.0" fill="#7751A7" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">核心 5 → F5</text>
+<text x="1545.0" y="1070.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">4 头；KV 窗口 30；10 个 Dropout</text>
+<text x="1545.0" y="1099.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">输入 P_t；历史 ×2 / 空间 ×2 / 交叉 ×1</text>
+<polyline points="1545,915 1545,1000" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1545,1000 1550.0,989.0 1540.0,989.0" fill="#7751A7"/>
+<rect x="1155" y="1220" width="780" height="155" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1545.0" y="1268.5" fill="#7751A7" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">跨分支融合 B → O_t</text>
+<text x="1545.0" y="1297.5" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">Q = Linear(F5)；K,V = 各自 Linear(F3)</text>
+<text x="1545.0" y="1326.5" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">单头 SDPA；输出 [B,90,128]</text>
+<polyline points="1545,1140 1545,1220" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1545,1220 1550.0,1209.0 1540.0,1209.0" fill="#7751A7"/>
+<polyline points="885,1290 1155,1290" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1155,1290 1144.0,1285.0 1144.0,1295.0" fill="#137C75"/>
+<text x="1020" y="1258" fill="#137C75" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">F3 → K,V</text>
+<rect x="105" y="1445" width="780" height="175" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="495.0" y="1489.0" fill="#137C75" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">注意力策略头</text>
+<text x="495.0" y="1518.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">Q = Linear(F3)；K = Linear(F3)</text>
+<text x="495.0" y="1547.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">QK^T / √128 → [B,90,90] → Flatten(8100)</text>
+<text x="495.0" y="1576.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">合法动作屏蔽 → 全动作 Softmax</text>
+<polyline points="495,1360 495,1445" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="495,1445 500.0,1434.0 490.0,1434.0" fill="#137C75"/>
+<rect x="1155" y="1445" width="780" height="175" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1545.0" y="1489.0" fill="#7751A7" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">价值头 · 当前走方胜 / 和 / 负</text>
+<text x="1545.0" y="1518.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">90 个位置均值池化 → LayerNorm(128)</text>
+<text x="1545.0" y="1547.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">Linear(128,64) → GELU → Linear(64,3)</text>
+<text x="1545.0" y="1576.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">Softmax → [P胜, P和, P负]</text>
+<polyline points="1545,1375 1545,1445" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1545,1445 1550.0,1434.0 1540.0,1434.0" fill="#7751A7"/>
+<polyline points="64,1728 1976,1728" fill="none" stroke="#D8E1E6" stroke-width="1" stroke-linejoin="round"/>
+<text x="66" y="1755" fill="#566A75" font-size="19" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">所有核心使用同一种详细子架构；各核心的头数与 KV 窗口见图。内部 FFN 为 128→512→128。</text>
+<text x="66" y="1785" fill="#566A75" font-size="19" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">新增 Dropout 均位于核心内的注意力/FFN 残差分支。跨分支融合 A/B 无残差、FFN 或时间缓存。</text>
+<text x="66" y="1815" fill="#566A75" font-size="19" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">监督训练启用；验证、对弈及含有效 PPO 的逻辑批量关闭。依据 models/Opus/network.py 与 models/common.py。</text>
+</svg>

@@ -1,0 +1,432 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="4840" height="5020" viewBox="0 0 2420 2510" role="img">
+<title>共享子架构 / 历史编码器—空间注意力—交叉融合（逐层展开）</title><desc>HaiKu 与 Opus 共用 Core；D=128，FFN=512；H/W 由所属核心决定；橙色为新增的 10 个 Dropout</desc>
+<rect width="2420" height="2510" fill="white"/>
+<text x="64" y="58" fill="#172D3A" font-size="40" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="start" dominant-baseline="central">共享子架构 / 历史编码器—空间注意力—交叉融合（逐层展开）</text>
+<text x="66" y="110" fill="#566A75" font-size="21" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">HaiKu 与 Opus 共用 Core；D=128，FFN=512；H/W 由所属核心决定；橙色为新增的 10 个 Dropout</text>
+<rect x="80" y="160" width="1440" height="85" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="800.0" y="188.0" fill="#137C75" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">核心输入 X_t  ·  [B,90,D]</text>
+<text x="800.0" y="217.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">来自 CNN 融合特征、前一核心或 Opus 融合 A</text>
+<rect x="1640" y="160" width="690" height="85" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1985.0" y="188.0" fill="#7751A7" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">绝对时间编码 e_t  ·  [1,1,D]</text>
+<text x="1985.0" y="217.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">sin/cos；可学习标量 β 为本核心独有</text>
+<rect x="90" y="320" width="700" height="95" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="440.0" y="353.0" fill="#285AA8" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">历史入口 E0 = LN_mix(X_t + βe_t)</text>
+<text x="440.0" y="382.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">LayerNorm(D)，带仿射参数</text>
+<rect x="850" y="320" width="700" height="95" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1200.0" y="353.0" fill="#137C75" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">空间入口 S0 = X_t</text>
+<text x="1200.0" y="382.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">保留当前空间信息</text>
+<polyline points="440,245 440,320" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="440,320 445.0,309.0 435.0,309.0" fill="#285AA8"/>
+<polyline points="1200,245 1200,320" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1200,320 1205.0,309.0 1195.0,309.0" fill="#137C75"/>
+<polyline points="1985,245 1985,277 775,277 775,320" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="775,320 780.0,309.0 770.0,309.0" fill="#7751A7"/>
+<polyline points="440,415 440,455" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="440,455 445.0,444.0 435.0,444.0" fill="#285AA8"/>
+<rect x="90" y="455" width="700" height="850" rx="0" fill="#FAFCFE" stroke="#285AA8" stroke-width="2" stroke-dasharray="9 7"/>
+<text x="440.0" y="483" fill="#285AA8" font-size="25" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">历史 Block 1  ·  KV_self,1</text>
+<rect x="150" y="516" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="533.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">输入残差 X</text>
+<polyline points="445.0,550 445.0,561" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,561 450.0,550.0 440.0,550.0" fill="#285AA8"/>
+<rect x="150" y="561" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="578.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Q / K / V：三个独立 Linear(D,D)</text>
+<polyline points="445.0,595 445.0,606" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,606 450.0,595.0 440.0,595.0" fill="#285AA8"/>
+<rect x="150" y="606" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="623.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">按 H 头重排，d_head = D/H</text>
+<polyline points="445.0,640 445.0,651" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,651 450.0,640.0 440.0,640.0" fill="#285AA8"/>
+<rect x="150" y="651" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="668.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">K,V 追加独立滑动 KV 缓存（窗口 W）</text>
+<polyline points="445.0,685 445.0,696" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,696 450.0,685.0 440.0,685.0" fill="#285AA8"/>
+<rect x="150" y="696" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="713.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">SDPA：softmax(QK^T/√d_head + mask)V</text>
+<polyline points="445.0,730 445.0,741" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,741 450.0,730.0 440.0,730.0" fill="#285AA8"/>
+<rect x="150" y="741" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="758.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">合并 H 头 → 输出 Linear(D,D)</text>
+<polyline points="445.0,775 445.0,786" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,786 450.0,775.0 440.0,775.0" fill="#285AA8"/>
+<rect x="150" y="786" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="803.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">GELU</text>
+<polyline points="445.0,820 445.0,831" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,831 450.0,820.0 440.0,820.0" fill="#285AA8"/>
+<rect x="150" y="831" width="590" height="34" rx="10" fill="#FCF5E9" stroke="#9B671D" stroke-width="2"/>
+<text x="445.0" y="848.0" fill="#9B671D" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Dropout H1a · p=0.1</text>
+<polyline points="445.0,865 445.0,876" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,876 450.0,865.0 440.0,865.0" fill="#285AA8"/>
+<rect x="150" y="876" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="893.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Add：X + 注意力分支</text>
+<polyline points="445.0,910 445.0,921" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,921 450.0,910.0 440.0,910.0" fill="#285AA8"/>
+<rect x="150" y="921" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="938.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">LayerNorm1(D) → h</text>
+<polyline points="445.0,955 445.0,966" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,966 450.0,955.0 440.0,955.0" fill="#285AA8"/>
+<rect x="150" y="966" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="983.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">FFN：Linear(D,512)</text>
+<polyline points="445.0,1000 445.0,1011" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1011 450.0,1000.0 440.0,1000.0" fill="#285AA8"/>
+<rect x="150" y="1011" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1028.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">GELU</text>
+<polyline points="445.0,1045 445.0,1056" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1056 450.0,1045.0 440.0,1045.0" fill="#285AA8"/>
+<rect x="150" y="1056" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1073.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">FFN：Linear(512,D)</text>
+<polyline points="445.0,1090 445.0,1101" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1101 450.0,1090.0 440.0,1090.0" fill="#285AA8"/>
+<rect x="150" y="1101" width="590" height="34" rx="10" fill="#FCF5E9" stroke="#9B671D" stroke-width="2"/>
+<text x="445.0" y="1118.0" fill="#9B671D" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Dropout H1b · p=0.1</text>
+<polyline points="445.0,1135 445.0,1146" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1146 450.0,1135.0 440.0,1135.0" fill="#285AA8"/>
+<rect x="150" y="1146" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1163.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Add：h + FFN 分支</text>
+<polyline points="445.0,1180 445.0,1191" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1191 450.0,1180.0 440.0,1180.0" fill="#285AA8"/>
+<rect x="150" y="1191" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1208.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">LayerNorm2(D)</text>
+<polyline points="445.0,1225 445.0,1236" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1236 450.0,1225.0 440.0,1225.0" fill="#285AA8"/>
+<rect x="150" y="1236" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1253.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">无效输入局面输出置 0</text>
+<polyline points="150,533 109,533 109,893 150,893" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="150,893 139.0,888.0 139.0,898.0" fill="#285AA8"/>
+<polyline points="150,938 129,938 129,1163 150,1163" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="150,1163 139.0,1158.0 139.0,1168.0" fill="#285AA8"/>
+<polyline points="440.0,1270 440,1345" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="440,1345 445.0,1334.0 435.0,1334.0" fill="#285AA8"/>
+<rect x="90" y="1345" width="700" height="850" rx="0" fill="#FAFCFE" stroke="#285AA8" stroke-width="2" stroke-dasharray="9 7"/>
+<text x="440.0" y="1373" fill="#285AA8" font-size="25" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">历史 Block 2  ·  KV_self,2</text>
+<rect x="150" y="1406" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1423.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">输入残差 X</text>
+<polyline points="445.0,1440 445.0,1451" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1451 450.0,1440.0 440.0,1440.0" fill="#285AA8"/>
+<rect x="150" y="1451" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1468.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Q / K / V：三个独立 Linear(D,D)</text>
+<polyline points="445.0,1485 445.0,1496" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1496 450.0,1485.0 440.0,1485.0" fill="#285AA8"/>
+<rect x="150" y="1496" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1513.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">按 H 头重排，d_head = D/H</text>
+<polyline points="445.0,1530 445.0,1541" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1541 450.0,1530.0 440.0,1530.0" fill="#285AA8"/>
+<rect x="150" y="1541" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1558.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">K,V 追加独立滑动 KV 缓存（窗口 W）</text>
+<polyline points="445.0,1575 445.0,1586" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1586 450.0,1575.0 440.0,1575.0" fill="#285AA8"/>
+<rect x="150" y="1586" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1603.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">SDPA：softmax(QK^T/√d_head + mask)V</text>
+<polyline points="445.0,1620 445.0,1631" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1631 450.0,1620.0 440.0,1620.0" fill="#285AA8"/>
+<rect x="150" y="1631" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1648.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">合并 H 头 → 输出 Linear(D,D)</text>
+<polyline points="445.0,1665 445.0,1676" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1676 450.0,1665.0 440.0,1665.0" fill="#285AA8"/>
+<rect x="150" y="1676" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1693.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">GELU</text>
+<polyline points="445.0,1710 445.0,1721" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1721 450.0,1710.0 440.0,1710.0" fill="#285AA8"/>
+<rect x="150" y="1721" width="590" height="34" rx="10" fill="#FCF5E9" stroke="#9B671D" stroke-width="2"/>
+<text x="445.0" y="1738.0" fill="#9B671D" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Dropout H2a · p=0.1</text>
+<polyline points="445.0,1755 445.0,1766" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1766 450.0,1755.0 440.0,1755.0" fill="#285AA8"/>
+<rect x="150" y="1766" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1783.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Add：X + 注意力分支</text>
+<polyline points="445.0,1800 445.0,1811" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1811 450.0,1800.0 440.0,1800.0" fill="#285AA8"/>
+<rect x="150" y="1811" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1828.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">LayerNorm1(D) → h</text>
+<polyline points="445.0,1845 445.0,1856" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1856 450.0,1845.0 440.0,1845.0" fill="#285AA8"/>
+<rect x="150" y="1856" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1873.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">FFN：Linear(D,512)</text>
+<polyline points="445.0,1890 445.0,1901" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1901 450.0,1890.0 440.0,1890.0" fill="#285AA8"/>
+<rect x="150" y="1901" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1918.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">GELU</text>
+<polyline points="445.0,1935 445.0,1946" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1946 450.0,1935.0 440.0,1935.0" fill="#285AA8"/>
+<rect x="150" y="1946" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="1963.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">FFN：Linear(512,D)</text>
+<polyline points="445.0,1980 445.0,1991" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,1991 450.0,1980.0 440.0,1980.0" fill="#285AA8"/>
+<rect x="150" y="1991" width="590" height="34" rx="10" fill="#FCF5E9" stroke="#9B671D" stroke-width="2"/>
+<text x="445.0" y="2008.0" fill="#9B671D" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Dropout H2b · p=0.1</text>
+<polyline points="445.0,2025 445.0,2036" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,2036 450.0,2025.0 440.0,2025.0" fill="#285AA8"/>
+<rect x="150" y="2036" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="2053.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Add：h + FFN 分支</text>
+<polyline points="445.0,2070 445.0,2081" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,2081 450.0,2070.0 440.0,2070.0" fill="#285AA8"/>
+<rect x="150" y="2081" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="2098.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">LayerNorm2(D)</text>
+<polyline points="445.0,2115 445.0,2126" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="445.0,2126 450.0,2115.0 440.0,2115.0" fill="#285AA8"/>
+<rect x="150" y="2126" width="590" height="34" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="445.0" y="2143.0" fill="#285AA8" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">无效输入局面输出置 0</text>
+<polyline points="150,1423 109,1423 109,1783 150,1783" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="150,1783 139.0,1778.0 139.0,1788.0" fill="#285AA8"/>
+<polyline points="150,1828 129,1828 129,2053 150,2053" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="150,2053 139.0,2048.0 139.0,2058.0" fill="#285AA8"/>
+<polyline points="1200,415 1200,455" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1200,455 1205.0,444.0 1195.0,444.0" fill="#137C75"/>
+<rect x="850" y="455" width="700" height="850" rx="0" fill="#FAFCFE" stroke="#137C75" stroke-width="2" stroke-dasharray="9 7"/>
+<text x="1200.0" y="483" fill="#137C75" font-size="25" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">空间 Block 1  ·  当前局面</text>
+<rect x="910" y="516" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="533.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">输入残差 X</text>
+<polyline points="1205.0,550 1205.0,561" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,561 1210.0,550.0 1200.0,550.0" fill="#137C75"/>
+<rect x="910" y="561" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="578.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Q / K / V：三个独立 Linear(D,D)</text>
+<polyline points="1205.0,595 1205.0,606" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,606 1210.0,595.0 1200.0,595.0" fill="#137C75"/>
+<rect x="910" y="606" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="623.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">按 H 头重排，d_head = D/H</text>
+<polyline points="1205.0,640 1205.0,651" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,651 1210.0,640.0 1200.0,640.0" fill="#137C75"/>
+<rect x="910" y="651" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="668.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">K,V 仅含当前棋盘的 90 个位置</text>
+<polyline points="1205.0,685 1205.0,696" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,696 1210.0,685.0 1200.0,685.0" fill="#137C75"/>
+<rect x="910" y="696" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="713.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">SDPA：softmax(QK^T/√d_head + mask)V</text>
+<polyline points="1205.0,730 1205.0,741" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,741 1210.0,730.0 1200.0,730.0" fill="#137C75"/>
+<rect x="910" y="741" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="758.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">合并 H 头 → 输出 Linear(D,D)</text>
+<polyline points="1205.0,775 1205.0,786" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,786 1210.0,775.0 1200.0,775.0" fill="#137C75"/>
+<rect x="910" y="786" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="803.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">GELU</text>
+<polyline points="1205.0,820 1205.0,831" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,831 1210.0,820.0 1200.0,820.0" fill="#137C75"/>
+<rect x="910" y="831" width="590" height="34" rx="10" fill="#FCF5E9" stroke="#9B671D" stroke-width="2"/>
+<text x="1205.0" y="848.0" fill="#9B671D" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Dropout S1a · p=0.1</text>
+<polyline points="1205.0,865 1205.0,876" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,876 1210.0,865.0 1200.0,865.0" fill="#137C75"/>
+<rect x="910" y="876" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="893.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Add：X + 注意力分支</text>
+<polyline points="1205.0,910 1205.0,921" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,921 1210.0,910.0 1200.0,910.0" fill="#137C75"/>
+<rect x="910" y="921" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="938.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">LayerNorm1(D) → h</text>
+<polyline points="1205.0,955 1205.0,966" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,966 1210.0,955.0 1200.0,955.0" fill="#137C75"/>
+<rect x="910" y="966" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="983.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">FFN：Linear(D,512)</text>
+<polyline points="1205.0,1000 1205.0,1011" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1011 1210.0,1000.0 1200.0,1000.0" fill="#137C75"/>
+<rect x="910" y="1011" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1028.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">GELU</text>
+<polyline points="1205.0,1045 1205.0,1056" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1056 1210.0,1045.0 1200.0,1045.0" fill="#137C75"/>
+<rect x="910" y="1056" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1073.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">FFN：Linear(512,D)</text>
+<polyline points="1205.0,1090 1205.0,1101" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1101 1210.0,1090.0 1200.0,1090.0" fill="#137C75"/>
+<rect x="910" y="1101" width="590" height="34" rx="10" fill="#FCF5E9" stroke="#9B671D" stroke-width="2"/>
+<text x="1205.0" y="1118.0" fill="#9B671D" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Dropout S1b · p=0.1</text>
+<polyline points="1205.0,1135 1205.0,1146" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1146 1210.0,1135.0 1200.0,1135.0" fill="#137C75"/>
+<rect x="910" y="1146" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1163.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Add：h + FFN 分支</text>
+<polyline points="1205.0,1180 1205.0,1191" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1191 1210.0,1180.0 1200.0,1180.0" fill="#137C75"/>
+<rect x="910" y="1191" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1208.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">LayerNorm2(D)</text>
+<polyline points="1205.0,1225 1205.0,1236" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1236 1210.0,1225.0 1200.0,1225.0" fill="#137C75"/>
+<rect x="910" y="1236" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1253.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">无效输入局面输出置 0</text>
+<polyline points="910,533 869,533 869,893 910,893" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="910,893 899.0,888.0 899.0,898.0" fill="#137C75"/>
+<polyline points="910,938 889,938 889,1163 910,1163" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="910,1163 899.0,1158.0 899.0,1168.0" fill="#137C75"/>
+<polyline points="1200.0,1270 1200,1345" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1200,1345 1205.0,1334.0 1195.0,1334.0" fill="#137C75"/>
+<rect x="850" y="1345" width="700" height="850" rx="0" fill="#FAFCFE" stroke="#137C75" stroke-width="2" stroke-dasharray="9 7"/>
+<text x="1200.0" y="1373" fill="#137C75" font-size="25" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">空间 Block 2  ·  当前局面</text>
+<rect x="910" y="1406" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1423.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">输入残差 X</text>
+<polyline points="1205.0,1440 1205.0,1451" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1451 1210.0,1440.0 1200.0,1440.0" fill="#137C75"/>
+<rect x="910" y="1451" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1468.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Q / K / V：三个独立 Linear(D,D)</text>
+<polyline points="1205.0,1485 1205.0,1496" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1496 1210.0,1485.0 1200.0,1485.0" fill="#137C75"/>
+<rect x="910" y="1496" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1513.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">按 H 头重排，d_head = D/H</text>
+<polyline points="1205.0,1530 1205.0,1541" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1541 1210.0,1530.0 1200.0,1530.0" fill="#137C75"/>
+<rect x="910" y="1541" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1558.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">K,V 仅含当前棋盘的 90 个位置</text>
+<polyline points="1205.0,1575 1205.0,1586" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1586 1210.0,1575.0 1200.0,1575.0" fill="#137C75"/>
+<rect x="910" y="1586" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1603.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">SDPA：softmax(QK^T/√d_head + mask)V</text>
+<polyline points="1205.0,1620 1205.0,1631" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1631 1210.0,1620.0 1200.0,1620.0" fill="#137C75"/>
+<rect x="910" y="1631" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1648.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">合并 H 头 → 输出 Linear(D,D)</text>
+<polyline points="1205.0,1665 1205.0,1676" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1676 1210.0,1665.0 1200.0,1665.0" fill="#137C75"/>
+<rect x="910" y="1676" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1693.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">GELU</text>
+<polyline points="1205.0,1710 1205.0,1721" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1721 1210.0,1710.0 1200.0,1710.0" fill="#137C75"/>
+<rect x="910" y="1721" width="590" height="34" rx="10" fill="#FCF5E9" stroke="#9B671D" stroke-width="2"/>
+<text x="1205.0" y="1738.0" fill="#9B671D" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Dropout S2a · p=0.1</text>
+<polyline points="1205.0,1755 1205.0,1766" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1766 1210.0,1755.0 1200.0,1755.0" fill="#137C75"/>
+<rect x="910" y="1766" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1783.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Add：X + 注意力分支</text>
+<polyline points="1205.0,1800 1205.0,1811" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1811 1210.0,1800.0 1200.0,1800.0" fill="#137C75"/>
+<rect x="910" y="1811" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1828.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">LayerNorm1(D) → h</text>
+<polyline points="1205.0,1845 1205.0,1856" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1856 1210.0,1845.0 1200.0,1845.0" fill="#137C75"/>
+<rect x="910" y="1856" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1873.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">FFN：Linear(D,512)</text>
+<polyline points="1205.0,1890 1205.0,1901" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1901 1210.0,1890.0 1200.0,1890.0" fill="#137C75"/>
+<rect x="910" y="1901" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1918.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">GELU</text>
+<polyline points="1205.0,1935 1205.0,1946" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1946 1210.0,1935.0 1200.0,1935.0" fill="#137C75"/>
+<rect x="910" y="1946" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="1963.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">FFN：Linear(512,D)</text>
+<polyline points="1205.0,1980 1205.0,1991" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,1991 1210.0,1980.0 1200.0,1980.0" fill="#137C75"/>
+<rect x="910" y="1991" width="590" height="34" rx="10" fill="#FCF5E9" stroke="#9B671D" stroke-width="2"/>
+<text x="1205.0" y="2008.0" fill="#9B671D" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Dropout S2b · p=0.1</text>
+<polyline points="1205.0,2025 1205.0,2036" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,2036 1210.0,2025.0 1200.0,2025.0" fill="#137C75"/>
+<rect x="910" y="2036" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="2053.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Add：h + FFN 分支</text>
+<polyline points="1205.0,2070 1205.0,2081" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,2081 1210.0,2070.0 1200.0,2070.0" fill="#137C75"/>
+<rect x="910" y="2081" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="2098.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">LayerNorm2(D)</text>
+<polyline points="1205.0,2115 1205.0,2126" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1205.0,2126 1210.0,2115.0 1200.0,2115.0" fill="#137C75"/>
+<rect x="910" y="2126" width="590" height="34" rx="10" fill="#EAF6F3" stroke="#137C75" stroke-width="2"/>
+<text x="1205.0" y="2143.0" fill="#137C75" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">无效输入局面输出置 0</text>
+<polyline points="910,1423 869,1423 869,1783 910,1783" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="910,1783 899.0,1778.0 899.0,1788.0" fill="#137C75"/>
+<polyline points="910,1828 889,1828 889,2053 910,2053" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="910,2053 899.0,2048.0 899.0,2058.0" fill="#137C75"/>
+<rect x="1640" y="365" width="690" height="135" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1985.0" y="403.5" fill="#7751A7" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">交叉查询准备 · 两次 LayerNorm</text>
+<text x="1985.0" y="432.5" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">S2 → LN_qcontent(D)，无仿射参数</text>
+<text x="1985.0" y="461.5" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">加 βe_t → LN_qmix(D)，带仿射参数</text>
+<polyline points="1200.0,2160 1200,2242 1588,2242 1588,430 1640,430" fill="none" stroke="#137C75" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1640,430 1629.0,425.0 1629.0,435.0" fill="#137C75"/>
+<text x="1550" y="2273" fill="#137C75" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="start" dominant-baseline="central">S2</text>
+<polyline points="1985,277 2360,277 2360,430 2330,430" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="2330,430 2341.0,435.0 2341.0,425.0" fill="#7751A7"/>
+<rect x="1640" y="560" width="690" height="110" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1985.0" y="586.0" fill="#7751A7" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">交叉 Block 的三个来源</text>
+<text x="1985.0" y="615.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">Q 输入 = 查询准备结果；K,V 输入 = E2</text>
+<text x="1985.0" y="644.0" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">第一条残差的输入 X = S2</text>
+<polyline points="1985,500 1985,560" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1985,560 1990.0,549.0 1980.0,549.0" fill="#7751A7"/>
+<polyline points="440.0,2160 440,2295 1610,2295 1610,615 1640,615" fill="none" stroke="#285AA8" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1640,615 1629.0,610.0 1629.0,620.0" fill="#285AA8"/>
+<text x="1470" y="2325" fill="#285AA8" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="start" dominant-baseline="central">E2 → K,V</text>
+<polyline points="1985,670 1985,725" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1985,725 1990.0,714.0 1980.0,714.0" fill="#7751A7"/>
+<rect x="1640" y="725" width="690" height="850" rx="0" fill="#FAFCFE" stroke="#7751A7" stroke-width="2" stroke-dasharray="9 7"/>
+<text x="1985.0" y="753" fill="#7751A7" font-size="25" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">交叉 Block  ·  KV_cross</text>
+<rect x="1700" y="786" width="580" height="34" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1990.0" y="803.0" fill="#7751A7" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">输入残差 X</text>
+<polyline points="1990.0,820 1990.0,831" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1990.0,831 1995.0,820.0 1985.0,820.0" fill="#7751A7"/>
+<rect x="1700" y="831" width="580" height="34" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1990.0" y="848.0" fill="#7751A7" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Q / K / V：三个独立 Linear(D,D)</text>
+<polyline points="1990.0,865 1990.0,876" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1990.0,876 1995.0,865.0 1985.0,865.0" fill="#7751A7"/>
+<rect x="1700" y="876" width="580" height="34" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1990.0" y="893.0" fill="#7751A7" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">按 H 头重排，d_head = D/H</text>
+<polyline points="1990.0,910 1990.0,921" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1990.0,921 1995.0,910.0 1985.0,910.0" fill="#7751A7"/>
+<rect x="1700" y="921" width="580" height="34" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1990.0" y="938.0" fill="#7751A7" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">K,V 追加独立滑动 KV 缓存（窗口 W）</text>
+<polyline points="1990.0,955 1990.0,966" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1990.0,966 1995.0,955.0 1985.0,955.0" fill="#7751A7"/>
+<rect x="1700" y="966" width="580" height="34" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1990.0" y="983.0" fill="#7751A7" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">SDPA：softmax(QK^T/√d_head + mask)V</text>
+<polyline points="1990.0,1000 1990.0,1011" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1990.0,1011 1995.0,1000.0 1985.0,1000.0" fill="#7751A7"/>
+<rect x="1700" y="1011" width="580" height="34" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1990.0" y="1028.0" fill="#7751A7" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">合并 H 头 → 输出 Linear(D,D)</text>
+<polyline points="1990.0,1045 1990.0,1056" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1990.0,1056 1995.0,1045.0 1985.0,1045.0" fill="#7751A7"/>
+<rect x="1700" y="1056" width="580" height="34" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1990.0" y="1073.0" fill="#7751A7" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">GELU</text>
+<polyline points="1990.0,1090 1990.0,1101" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1990.0,1101 1995.0,1090.0 1985.0,1090.0" fill="#7751A7"/>
+<rect x="1700" y="1101" width="580" height="34" rx="10" fill="#FCF5E9" stroke="#9B671D" stroke-width="2"/>
+<text x="1990.0" y="1118.0" fill="#9B671D" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Dropout Ca · p=0.1</text>
+<polyline points="1990.0,1135 1990.0,1146" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1990.0,1146 1995.0,1135.0 1985.0,1135.0" fill="#7751A7"/>
+<rect x="1700" y="1146" width="580" height="34" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1990.0" y="1163.0" fill="#7751A7" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Add：X + 注意力分支</text>
+<polyline points="1990.0,1180 1990.0,1191" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1990.0,1191 1995.0,1180.0 1985.0,1180.0" fill="#7751A7"/>
+<rect x="1700" y="1191" width="580" height="34" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1990.0" y="1208.0" fill="#7751A7" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">LayerNorm1(D) → h</text>
+<polyline points="1990.0,1225 1990.0,1236" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1990.0,1236 1995.0,1225.0 1985.0,1225.0" fill="#7751A7"/>
+<rect x="1700" y="1236" width="580" height="34" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1990.0" y="1253.0" fill="#7751A7" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">FFN：Linear(D,512)</text>
+<polyline points="1990.0,1270 1990.0,1281" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1990.0,1281 1995.0,1270.0 1985.0,1270.0" fill="#7751A7"/>
+<rect x="1700" y="1281" width="580" height="34" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1990.0" y="1298.0" fill="#7751A7" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">GELU</text>
+<polyline points="1990.0,1315 1990.0,1326" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1990.0,1326 1995.0,1315.0 1985.0,1315.0" fill="#7751A7"/>
+<rect x="1700" y="1326" width="580" height="34" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1990.0" y="1343.0" fill="#7751A7" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">FFN：Linear(512,D)</text>
+<polyline points="1990.0,1360 1990.0,1371" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1990.0,1371 1995.0,1360.0 1985.0,1360.0" fill="#7751A7"/>
+<rect x="1700" y="1371" width="580" height="34" rx="10" fill="#FCF5E9" stroke="#9B671D" stroke-width="2"/>
+<text x="1990.0" y="1388.0" fill="#9B671D" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Dropout Cb · p=0.1</text>
+<polyline points="1990.0,1405 1990.0,1416" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1990.0,1416 1995.0,1405.0 1985.0,1405.0" fill="#7751A7"/>
+<rect x="1700" y="1416" width="580" height="34" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1990.0" y="1433.0" fill="#7751A7" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">Add：h + FFN 分支</text>
+<polyline points="1990.0,1450 1990.0,1461" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1990.0,1461 1995.0,1450.0 1985.0,1450.0" fill="#7751A7"/>
+<rect x="1700" y="1461" width="580" height="34" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1990.0" y="1478.0" fill="#7751A7" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">LayerNorm2(D)</text>
+<polyline points="1990.0,1495 1990.0,1506" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1990.0,1506 1995.0,1495.0 1985.0,1495.0" fill="#7751A7"/>
+<rect x="1700" y="1506" width="580" height="34" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1990.0" y="1523.0" fill="#7751A7" font-size="18" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">无效输入局面输出置 0</text>
+<polyline points="1700,803 1659,803 1659,1163 1700,1163" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1700,1163 1689.0,1158.0 1689.0,1168.0" fill="#7751A7"/>
+<polyline points="1700,1208 1679,1208 1679,1433 1700,1433" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1700,1433 1689.0,1428.0 1689.0,1438.0" fill="#7751A7"/>
+<rect x="1640" y="1650" width="690" height="90" rx="10" fill="#F3EFFA" stroke="#7751A7" stroke-width="2"/>
+<text x="1985.0" y="1680.5" fill="#7751A7" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">核心输出 F_t  ·  [B,90,D]</text>
+<text x="1985.0" y="1709.5" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">传给下一核心、策略头或 Opus 跨分支融合</text>
+<polyline points="1985.0,1540 1985,1650" fill="none" stroke="#7751A7" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="1985,1650 1990.0,1639.0 1980.0,1639.0" fill="#7751A7"/>
+<rect x="1640" y="1800" width="690" height="150" rx="10" fill="#FCF5E9" stroke="#9B671D" stroke-width="2"/>
+<text x="1985.0" y="1831.5" fill="#9B671D" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">数量核对 · 本核心共 10 层</text>
+<text x="1985.0" y="1860.5" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">历史 2×2 = 4；空间 2×2 = 4；交叉 1×2 = 2</text>
+<text x="1985.0" y="1889.5" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">每个 Block：注意力分支 1 个 + FFN 分支 1 个</text>
+<text x="1985.0" y="1918.5" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">Dropout 无可训练参数，也无 state_dict 条目</text>
+<rect x="1640" y="2010" width="690" height="150" rx="10" fill="#EDF3FC" stroke="#285AA8" stroke-width="2"/>
+<text x="1985.0" y="2041.5" fill="#285AA8" font-size="24" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="700" text-anchor="middle" dominant-baseline="central">掩码与缓存</text>
+<text x="1985.0" y="2070.5" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">历史 / 交叉：窗口最多 W 个局面（含当前）</text>
+<text x="1985.0" y="2099.5" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">空间：只看当前 90 个位置；均非 token 下三角</text>
+<text x="1985.0" y="2128.5" fill="#172D3A" font-size="20" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="middle" dominant-baseline="central">KV 缓存按序列独立；填充 key 屏蔽</text>
+<polyline points="64,2358 2356,2358" fill="none" stroke="#D8E1E6" stroke-width="1" stroke-linejoin="round"/>
+<text x="66" y="2385" fill="#566A75" font-size="19" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">注意力分支：h = LN1(X + Dropout(GELU(Y)))；FFN 分支：LN2(h + Dropout(Linear2(GELU(Linear1(h)))))。</text>
+<text x="66" y="2415" fill="#566A75" font-size="19" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">Y 为多头注意力合并并经过输出 Linear 后的结果；图中细线为绕过分支的残差输入，保留原有 LayerNorm 顺序。</text>
+<text x="66" y="2445" fill="#566A75" font-size="19" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">默认 p=0.1，可用 --dropout 修改；train() 随机丢弃并按 1/(1−p) 缩放，eval() 为恒等映射（p=1 时训练分支全 0）。</text>
+<text x="66" y="2475" fill="#566A75" font-size="19" font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-weight="400" text-anchor="start" dominant-baseline="central">依据 models/common.py 的 Core / Block / Attention；Opus 外部桥接注意力与策略头不属于本核心。</text>
+</svg>

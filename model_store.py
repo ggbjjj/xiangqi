@@ -238,6 +238,9 @@ def save_checkpoint(model, *, path=None, run_id, epoch, global_step, metrics,
     torch.save({k:v.detach().cpu() for k,v in model.state_dict().items()},data)
     payload = data.getvalue()
     state = dict(training_state or {})
+    metrics=dict(metrics)
+    if hasattr(model,'value_head'):
+        metrics.setdefault('value_trained',bool(getattr(model,'value_trained',False)))
     if optimizer is not None: state['optimizer'] = optimizer.state_dict()
     state_bytes = io.BytesIO()
     torch.save(state,state_bytes)
@@ -405,6 +408,15 @@ def load_parameter_model(family,parameter_id=None,*,path=None,device='cpu',resum
     model,meta,state=load_checkpoint(row['model_db'],row['checkpoint_id'],device,resume)
     model.display_name=row['version_name']
     return model,meta,state
+
+
+def load_value_model(*,path=MODEL_CATALOG,device='cpu'):
+    """Use the configured Opus default for analysis, independent of the opponent."""
+    model,meta,_=load_parameter_model('Opus',path=path,device=device)
+    if not meta['published'] or not getattr(model,'value_trained',False):
+        raise ValueError('暂无已训练的价值模型')
+    model.display_name=default_model_name(meta.get('model_db',_db_path(path,'Opus'))) or 'Opus-5'
+    return model
 
 
 def describe_version(checkpoint_id, *, path=MODEL_CATALOG, version_name=None, description=None):
@@ -588,6 +600,9 @@ def load_checkpoint(path=MODEL_DB, checkpoint_id=None, device='cpu', resume=Fals
         model.load_state_dict(torch.load(io.BytesIO(payload),map_location='cpu',weights_only=True),strict=True)
         model.to(device).eval()
         metadata = {k:row[k] for k in row.keys() if k not in ('weights_blob','training_state_blob')}
+        metrics=json.loads(metadata['metrics_json'])
+        model.value_trained=bool(metrics.get('value_trained',
+            metrics.get('last_batch',{}).get('terms',{}).get('value',0)>0))
         state = (torch.load(io.BytesIO(row['training_state_blob']),map_location=device,weights_only=True)
                  if resume and row['training_state_blob'] else {})
         return model,metadata,state

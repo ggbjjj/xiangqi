@@ -86,11 +86,12 @@ def test_heldout_evaluation_excludes_padding_and_preserves_parameters(book_run):
     model,db,ident,books=book_run
     dataset=BookDataset(5,'validation',books)
     model.train(); state=copy.deepcopy(model.state_dict())
-    parallel=evaluate_books(model,dataset,micro_batch=2,chunk_size=2)
-    serial=evaluate_books(model,dataset,micro_batch=1,chunk_size=2)
+    parallel=evaluate_books(model,dataset,micro_batch=2,ngram=3,chunk_size=2)
+    serial=evaluate_books(model,dataset,micro_batch=1,ngram=3,chunk_size=2)
     assert parallel['steps']==4 and parallel['games']==2
     assert parallel['loss']==pytest.approx(serial['loss'],abs=2e-5)
-    assert parallel['top1']==serial['top1'] and parallel['top3']==serial['top3']
+    assert parallel['perplexity']==pytest.approx(serial['perplexity'],abs=2e-5)
+    assert parallel['padding_steps']==6 and len(parallel['samples'])==2
     assert model.training and all(p.grad is None for p in model.parameters())
     assert all(torch.equal(v,model.state_dict()[k]) for k,v in state.items())
 
@@ -106,9 +107,12 @@ def test_validation_selects_best_id_without_discarding_latest_epoch(book_run,tmp
     from model_store import main as admin
     _,db,ident,books=book_run
     base_sha=load_checkpoint(db,ident)[1]['sha256']
-    scores=iter((3.,2.,4.))
-    monkeypatch.setattr(cli,'evaluate_books',lambda *a,**kw:
-        {'loss':next(scores),'top1':.2,'top3':.5,'games':2,'steps':4})
+    scores=iter(zip((3.,2.,4.),(1.,2.,.5)))
+    def score(model,dataset,**kwargs):
+        result=evaluate_books(model,dataset,**kwargs)
+        result['perplexity'],result['loss']=next(scores)
+        return result
+    monkeypatch.setattr(cli,'evaluate_books',score)
     report=cli.main(cli_args(db,books,tmp_path)+['--set-default'])
     assert report['best']['parameter_id']==3 and report['best']['completed_epochs']==2
     assert get_default_parameter_id('HaiKu',path=db)==3 and get_latest_parameter_id('HaiKu',path=db)==4
@@ -119,7 +123,8 @@ def test_validation_selects_best_id_without_discarding_latest_epoch(book_run,tmp
     directory=tmp_path/'runs'/'curves-test'
     assert json.loads((directory/'best.json').read_text(encoding='utf-8'))['parameter_id']==3
     log=events(directory/'tensorboard')
-    assert [e.value for e in log.Scalars('validation/loss')]==[3.,2.,4.]
+    assert [e.value for e in log.Scalars('validation/perplexity')]==[3.,2.,4.]
+    assert [e.value for e in log.Scalars('validation/loss')]==[1.,2.,.5]
     assert len(log.Scalars('book_ce/train'))==3 and len(log.Scalars('loss/logical_total'))==3
     capsys.readouterr(); before=db.read_bytes()
     admin(['--db',str(db),'--family','HaiKu','get-best','--run-id',report['run_id']])
@@ -148,6 +153,20 @@ def test_explicit_validation_requires_heldout_data(book_run,tmp_path):
     with connect(books) as conn: conn.execute("DELETE FROM games WHERE split='validation'")
     with pytest.raises(SystemExit) as error: cli.main(cli_args(db,books,tmp_path)+['--validation','books'])
     assert error.value.code==1 and len(list_parameter_configs('HaiKu',path=db))==1
+
+
+def test_standalone_evaluation_crops_all_heldout_moves_without_parameter_or_book_writes(book_run,tmp_path,capsys):
+    from training.evaluate import main
+    _,db,ident,books=book_run
+    model_before=db.read_bytes(); books_before=books.read_bytes()
+    report=main(['--family','HaiKu','--id','1','--model-db',str(db),'--book-db',str(books),
+        '--L','2','--n','2','--micro-batch','2','--cpu-threads','2','--device','cpu',
+        '--no-progress','--output',str(tmp_path/'evaluation')])
+    assert report['source_games']==2 and report['segments']==3
+    assert report['histogram']['total']==3 and report['steps']==4 and report['padding_steps']==2
+    assert db.read_bytes()==model_before and books.read_bytes()==books_before
+    assert len(Path(report['artifacts']['samples']).read_text(encoding='utf-8').splitlines())==3
+    assert '切段后）：3' in capsys.readouterr().out
 
 
 def test_dashboard_launcher_configures_live_reload_without_gpu(monkeypatch,tmp_path):

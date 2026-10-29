@@ -31,9 +31,9 @@ h2{font-size:16px;font-weight:600;margin:0 0 7px}.charthead{display:flex;align-i
 <div class="card"><p>本次最佳参数</p><div class="value" id="best">—</div></div>
 </section>
 <div class="grid">
-<section class="chart"><div class="charthead"><div><h2>实时训练损失</h2><p>不同分项可通过图例开关；默认展示原始曲线</p></div></div><div class="legend" id="lossLegend"></div><div class="plot"><canvas id="loss" role="img" aria-label="实时训练损失曲线"></canvas><div class="tooltip"></div></div><p class="axis" id="lossAxis">横轴：反向传播段次数　纵轴：损失值</p></section>
-<section class="chart"><h2>古谱训练与验证损失</h2><p>最佳参数按本次运行中最低的完整验证损失选择</p><div class="legend"><span><i class="dot" style="background:#347bbf"></i>训练集交叉熵</span><span><i class="dot" style="background:#d18340"></i>验证集交叉熵</span></div><div class="plot"><canvas id="validation" role="img" aria-label="古谱训练与验证损失曲线"></canvas><div class="tooltip"></div></div><p class="axis">横轴：训练轮次　纵轴：合法动作交叉熵</p></section>
-<section class="chart"><h2>验证集动作命中率</h2><p>衡量对古谱动作的预测，不代表对弈胜率</p><div class="legend"><span><i class="dot" style="background:#288b7c"></i>首选动作命中率</span><span><i class="dot" style="background:#8071bf"></i>前三动作命中率</span></div><div class="plot"><canvas id="accuracy" role="img" aria-label="验证集动作命中率曲线"></canvas><div class="tooltip"></div></div><p class="axis">横轴：训练轮次　纵轴：动作命中率（%）</p></section>
+<section class="chart"><div class="charthead"><div><h2>实时训练损失</h2><p>分项已乘对应系数；系数为零时隐藏；动作熵损失为 −λH</p></div></div><div class="legend" id="lossLegend"></div><div class="plot"><canvas id="loss" role="img" aria-label="实时训练损失曲线"></canvas><div class="tooltip"></div></div><p class="axis" id="lossAxis">横轴：反向传播段次数　纵轴：损失值</p></section>
+<section class="chart"><h2>古谱训练与验证损失</h2><p>有效步交叉熵供诊断；最佳参数按平均切片困惑度选择</p><div class="legend"><span><i class="dot" style="background:#347bbf"></i>训练集交叉熵</span><span><i class="dot" style="background:#d18340"></i>验证集交叉熵</span></div><div class="plot"><canvas id="validation" role="img" aria-label="古谱训练与验证损失曲线"></canvas><div class="tooltip"></div></div><p class="axis">横轴：训练轮次　纵轴：合法动作交叉熵</p></section>
+<section class="chart"><h2>验证集困惑度区间分布</h2><p id="pplSummary">等待完整验证；每个切片对应一个困惑度</p><div class="legend"><span><i class="dot" style="background:#288b7c"></i>切片局数（越低的困惑度越好）</span></div><div class="plot"><canvas id="perplexity" role="img" aria-label="验证集困惑度区间统计图"></canvas><div class="tooltip"></div></div><p class="axis">横轴：困惑度区间　纵轴：切片局数；填充步概率 0.5</p></section>
 <section class="chart"><h2>参数更新进度</h2><p>整个逻辑 Batch 完成后，优化器才更新一次参数</p><div class="legend"><span><i class="dot" style="background:#347bbf"></i>累计实际更新次数</span></div><div class="plot"><canvas id="optimizer" role="img" aria-label="参数更新次数曲线"></canvas><div class="tooltip"></div></div><p class="axis">横轴：逻辑 Batch 次数　纵轴：累计参数更新次数</p></section>
 </div>
 <p class="note">默认每 16 个时间步反传一次并截断历史梯度，记录一个损失点；这不等于更新一次参数。验证曲线每轮记录一次。平滑只影响显示；评优始终使用未平滑的完整验证集结果。未开启古谱验证时不产生最佳参数；PPO 损失不能用来判定棋力。训练停止后，已记录的曲线仍可查看。</p>
@@ -41,9 +41,10 @@ h2{font-size:16px;font-weight:600;margin:0 0 7px}.charthead{display:flex;align-i
 'use strict';
 const byId=id=>document.getElementById(id);
 const colors=['#347bbf','#288b7c','#d18340','#8071bf','#a66b91'];
-const names={total:'总损失',book:'棋谱策略损失',ppo:'PPO 策略损失',value:'价值损失',entropy:'策略熵 H'};
+const names={total:'总损失',book:'策略损失',value:'价值损失',ppo:'PPO损失',entropy:'动作熵损失'};
 const axes={segment:'反向传播段次数',micro:'微批量次数',logical:'逻辑 Batch 次数'};
-let series={},selected='',running=false,activeKeys=new Set(['total','book','ppo','value']);
+let series={},weights=null,perplexity=null,selected='',running=false,activeKeys=new Set(Object.keys(names));
+function coefficient(key){return key==='total'?1:(key==='entropy'?-1:1)*(weights===null?1:(weights[key]||0))}
 function last(tag){const points=series[tag]||[];return points.length?points[points.length-1][1]:null}
 function number(value){if(value===null)return '—';return Number.isInteger(value)?value.toLocaleString('zh-CN'):value.toFixed(3)}
 function rows(tag,scale=1){return (series[tag]||[]).map(p=>[p[0],p[1]*scale])}
@@ -88,20 +89,46 @@ function draw(id,lines,xlabel,ylabel){
  };
  canvas.onmouseleave=()=>{tooltip.style.display='none'};
 }
+function drawPerplexity(){
+ const canvas=byId('perplexity'),rect=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+ canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);
+ const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+ const w=rect.width,h=rect.height,left=60,right=w-16,top=30,bottom=h-55,bins=perplexity?.histogram?.bins||[];
+ ctx.font='12px "Microsoft YaHei",sans-serif';ctx.fillStyle='#75879a';ctx.textAlign='center';
+ if(!bins.length){ctx.fillText('此运行尚无按切片计算的困惑度分布',w/2,h/2);byId('pplSummary').textContent='等待完整验证；旧命中率日志不能还原每片困惑度';return}
+ byId('pplSummary').textContent=`${number(perplexity.source_games)} 原局 → ${number(perplexity.segments)} 切片局；L=${perplexity.L}，n=${perplexity.n}；平均 ${number(perplexity.perplexity)}，中位数 ${number(perplexity.median_perplexity)}`;
+ const ymax=Math.max(1,...bins.map(b=>b.count))*1.2,slot=(right-left)/bins.length;
+ for(let i=0;i<=4;i++){
+  const y=bottom-(bottom-top)*i/4;ctx.strokeStyle='#e9eef5';ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();
+  ctx.textAlign='right';ctx.fillStyle='#75879a';ctx.fillText(Math.round(ymax*i/4).toLocaleString(),left-8,y+4);
+ }
+ bins.forEach((bin,i)=>{
+  const height=(bottom-top)*bin.count/ymax,x=left+slot*i+slot*.14;
+  ctx.fillStyle='#288b7c';ctx.fillRect(x,bottom-height,slot*.72,height);
+  ctx.textAlign='center';ctx.fillStyle='#526a83';ctx.fillText(bin.label,left+slot*(i+.5),bottom+22);
+  if(bin.count)ctx.fillText(number(bin.count),left+slot*(i+.5),bottom-height-8);
+ });
+ const tooltip=canvas.nextElementSibling;
+ canvas.onmousemove=event=>{
+  const x=event.clientX-rect.left,index=Math.floor((x-left)/slot);if(index<0||index>=bins.length){tooltip.style.display='none';return}
+  const bin=bins[index];tooltip.textContent=`${bin.label}：${number(bin.count)} 局（${bin.percent.toFixed(2)}%）`;
+  tooltip.style.display='block';tooltip.style.left=Math.max(0,Math.min(w-200,x+12))+'px';tooltip.style.top='32px';
+ };canvas.onmouseleave=()=>{tooltip.style.display='none'};
+}
 function render(){
  const level=byId('level').value,prefix='loss/'+level+'_';
  byId('lossAxis').textContent='横轴：'+axes[level]+'　纵轴：损失值';
  byId('smoothValue').textContent=Number(byId('smooth').value).toFixed(2);
- const available=Object.keys(names).filter(key=>(series[prefix+key]||[]).length);
+ const available=Object.keys(names).filter(key=>coefficient(key)!==0&&(series[prefix+key]||[]).length);
  const legend=byId('lossLegend');legend.replaceChildren();
  available.forEach((key,i)=>{const label=document.createElement('label'),box=document.createElement('input'),mark=document.createElement('i');
   box.type='checkbox';box.checked=activeKeys.has(key);box.onchange=()=>{if(box.checked)activeKeys.add(key);else activeKeys.delete(key);render()};
   mark.className='dot';mark.style.background=colors[Object.keys(names).indexOf(key)];
   label.append(box,mark,document.createTextNode(names[key]));legend.append(label);
  });
- draw('loss',available.filter(key=>activeKeys.has(key)).map(key=>({name:names[key],color:colors[Object.keys(names).indexOf(key)],points:rows(prefix+key)})),axes[level],'损失值');
+ draw('loss',available.filter(key=>activeKeys.has(key)).map(key=>({name:names[key],color:colors[Object.keys(names).indexOf(key)],points:rows(prefix+key,coefficient(key))})),axes[level],'损失值');
  draw('validation',[{name:'训练集交叉熵',color:colors[0],points:rows('book_ce/train')},{name:'验证集交叉熵',color:colors[2],points:rows('book_ce/validation')}],'训练轮次','合法动作交叉熵');
- draw('accuracy',[{name:'首选动作命中率',color:colors[1],points:rows('validation/top1',100)},{name:'前三动作命中率',color:colors[3],points:rows('validation/top3',100)}],'训练轮次','动作命中率（%）');
+ drawPerplexity();
  draw('optimizer',[{name:'累计实际更新次数',color:colors[0],points:rows('optimization/updates_after_batch')}],'逻辑 Batch 次数','累计参数更新次数');
  const segments=series['loss/segment_total']||[];
  byId('segments').textContent=segments.length?number(segments[segments.length-1][0]):'—';
@@ -118,8 +145,8 @@ async function refresh(){
    if(!runs.includes(selected))selected=runs[runs.length-1]||'';byId('run').value=selected;
   }
   byId('message').textContent=runs.length?'':'还没有训练日志。启动训练后，此窗口会自动显示曲线。';
-  if(selected){const result=await fetch('/api/scalars?run='+encodeURIComponent(selected),{cache:'no-store'}),payload=await result.json();if(!result.ok)throw Error(payload.error);series=payload.series}
-  else series={};
+  if(selected){const result=await fetch('/api/scalars?run='+encodeURIComponent(selected),{cache:'no-store'}),payload=await result.json();if(!result.ok)throw Error(payload.error);series=payload.series;weights=payload.weights||null;perplexity=payload.validation_perplexity||null}
+  else {series={};weights=null;perplexity=null}
   render();byId('status').textContent='实时更新 · 每秒刷新';byId('updated').textContent='更新于 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});
  }catch(error){byId('status').textContent='连接暂时中断，正在重试';byId('message').textContent=error.message}
  finally{running=false}

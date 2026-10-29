@@ -1,5 +1,4 @@
 """Freeze an explicitly named checkpoint; sample both colors without MCTS or engines."""
-from collections import Counter
 from dataclasses import dataclass
 import copy
 import torch
@@ -10,6 +9,7 @@ from training.exploration import Exploration,sample_actions
 from training.loss import split_output
 from .store import Snapshot,create_run,save_games,finish_run,committed_game_ids
 from training.control import WorkInterrupted,check_stop
+from repetition import RepetitionTracker,REPETITION_POLICY
 
 
 def generation_micro_batch(save_every,micro_batch=None):
@@ -28,11 +28,13 @@ class SelfPlayRules:
     quiet_plies: int = 120
     repetition: int = 3
     draw_no_attackers: bool = True
+    repetition_policy: str = REPETITION_POLICY
 
     def __post_init__(self):
         if any(type(n) is not int or n<1 for n in (self.max_plies,self.quiet_plies)):
             raise ValueError('总步数上限与连续未吃子上限须为正整数')
-        if type(self.repetition) is not int or self.repetition<2: raise ValueError('重复和棋次数须至少为 2')
+        if type(self.repetition) is not int or self.repetition<2: raise ValueError('连续重复变招次数须至少为 2')
+        if self.repetition_policy!=REPETITION_POLICY: raise ValueError('生成器必须使用当前连续循环变招规则')
 
 
 class Position:
@@ -41,17 +43,19 @@ class Position:
         self.board,self.turn=from_fen(fen); self.rules=rules
         fields=fen.split()
         self.quiet=int(fields[4]) if len(fields)>4 and fields[4].isdigit() else 0
-        self.counts=Counter({(self.board.signature(),self.turn):1})
+        self.repetition=RepetitionTracker(self.board,self.turn,rules.repetition)
+
+    def legal_mask(self):
+        return legal_action_mask(self.board,self.turn,repetition=self.repetition)
 
     def terminal(self,generated):
-        legal=legal_action_mask(self.board,self.turn)
+        legal=self.legal_mask()
         if not legal.any():
             return ('0-1' if self.turn=='r' else '1-0',
+                    'no_legal_alternative' if self.board.has_any_legal_move(self.turn) else
                     'checkmate' if self.board.is_in_check(self.turn) else 'stalemate'),legal
         if self.rules.draw_no_attackers and not any(p and p.kind in ('R','H','C','P') for row in self.board.grid for p in row):
             return ('1/2-1/2','no_attackers'),legal
-        if self.counts[(self.board.signature(),self.turn)]>=self.rules.repetition:
-            return ('1/2-1/2','repetition'),legal
         if self.quiet>=self.rules.quiet_plies: return ('1/2-1/2','quiet_limit'),legal
         if generated>=self.rules.max_plies: return ('1/2-1/2','max_plies'),legal
         return None,legal
@@ -59,10 +63,11 @@ class Position:
     def move(self,action,legal):
         if type(action) is not int or not 0<=action<8100 or not legal[action]: raise ValueError('重放或采样包含非法动作')
         fr,fc,tr,tc=action_to_move(action)
+        if (fr,fc,tr,tc) in self.repetition.forbidden_moves(): raise ValueError('连续重复循环后必须变招')
         self.quiet=0 if self.board.grid[tr][tc] is not None else self.quiet+1
         self.board=self.board.apply_move(fr,fc,tr,tc)
+        self.repetition.push((fr,fc,tr,tc),self.board)
         self.turn='b' if self.turn=='r' else 'r'
-        self.counts[(self.board.signature(),self.turn)]+=1
 
 
 class SelfPlayGenerator:
@@ -125,7 +130,7 @@ class SelfPlayGenerator:
                     check_stop(cancel_event)
                     _,_,cache=self._forward_batch(positions,cache)
                     inference_batches+=1
-                    for position in positions: position.move(action,legal_action_mask(position.board,position.turn))
+                    for position in positions: position.move(action,position.legal_mask())
                     if on_step: on_step({'phase':'历史暖启动','steps':0,'batches':1,'active':size})
                 while any(active):
                     check_stop(cancel_event)

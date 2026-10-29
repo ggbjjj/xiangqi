@@ -1,0 +1,1309 @@
+{
+  "decoder": "ccbridge-v21-mainline-v1",
+  "processed_this_run": 3389,
+  "added_games": 2553,
+  "matched_existing_games": 617,
+  "duplicate_records_this_run": 809,
+  "result_conflicts_this_run": [
+    "3d5bd12c3e2ff93227eb8b3d80597a34b99312ef480572574538005d947d6fb3",
+    "370466f11b772259ea0e40e594c27b2c39b52cc255f6d802056bb394a79ca4eb",
+    "095057d0bb39c8b8e7117ccd06f2f355a3cc1bf8fe944da1944565836314765d",
+    "a1ada8a4fbad97d032db47a9fbe9674198ba4452e16717bc98d828f59176698b"
+  ],
+  "before": {
+    "train": {
+      "count": 24916,
+      "total_plies": 2147526,
+      "max": 430,
+      "mean": 86.19064055225557,
+      "median": 78.0
+    },
+    "validation": {
+      "count": 1440,
+      "total_plies": 121498,
+      "max": 317,
+      "mean": 84.37361111111112,
+      "median": 76.0
+    },
+    "test": {
+      "count": 1403,
+      "total_plies": 123280,
+      "max": 381,
+      "mean": 87.8688524590164,
+      "median": 79
+    }
+  },
+  "after": {
+    "train": {
+      "count": 27179,
+      "total_plies": 2209538,
+      "max": 430,
+      "mean": 81.29577983001582,
+      "median": 74
+    },
+    "validation": {
+      "count": 1576,
+      "total_plies": 124867,
+      "max": 317,
+      "mean": 79.23032994923858,
+      "median": 72.0
+    },
+    "test": {
+      "count": 1557,
+      "total_plies": 127571,
+      "max": 381,
+      "mean": 81.93384714193962,
+      "median": 75
+    }
+  },
+  "cbl_all_mainlines": {
+    "count": 3389,
+    "total_plies": 133788,
+    "max": 299,
+    "mean": 39.47713189731484,
+    "median": 28
+  },
+  "cbl_valid_mainlines": {
+    "count": 3362,
+    "total_plies": 133554,
+    "max": 299,
+    "mean": 39.724568709101725,
+    "median": 28.0
+  },
+  "cbl_unique_games": 3170,
+  "cbl_status": {
+    "validated": 3362,
+    "rejected": 10,
+    "excluded_empty": 17
+  },
+  "cbl_original_results": {
+    "0-1": 380,
+    "1-0": 1449,
+    "*": 475,
+    "1/2-1/2": 1085
+  },
+  "cbl_valid_results": {
+    "0-1": 379,
+    "1-0": 1441,
+    "*": 466,
+    "1/2-1/2": 1076
+  },
+  "cbl_unique_game_results": {
+    "*": 391,
+    "0-1": 364,
+    "1-0": 1386,
+    "1/2-1/2": 1029
+  },
+  "errors": [
+    {
+      "source_path": "raw/cnvcs_gupu/桔中秘残局谱.cbl",
+      "record_index": 40,
+      "title": "上下离心",
+      "error": "ply=8: illegal move 25-24, turn=b"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/梦入神机.cbl",
+      "record_index": 106,
+      "title": "舍命争锋",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/梦入神机.cbl",
+      "record_index": 136,
+      "title": "狐兔争穴",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/泥马渡康王.cbl",
+      "record_index": 0,
+      "title": "马踏连营",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/泥马渡康王.cbl",
+      "record_index": 34,
+      "title": "泥马渡康王-36",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/泥马渡康王.cbl",
+      "record_index": 42,
+      "title": "匹马从征",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/泥马渡康王.cbl",
+      "record_index": 43,
+      "title": "吐芳雪梅-1",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/泥马渡康王.cbl",
+      "record_index": 44,
+      "title": "吐芳雪梅-2",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/泥马渡康王.cbl",
+      "record_index": 45,
+      "title": "徙木立信",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/泥马渡康王.cbl",
+      "record_index": 50,
+      "title": "新泥马-4",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/泥马渡康王.cbl",
+      "record_index": 51,
+      "title": "新泥马",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/泥马渡康王.cbl",
+      "record_index": 52,
+      "title": "云里金刚",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/烂柯神机.cbl",
+      "record_index": 81,
+      "title": "惊天霹雳 正和",
+      "error": "ply=2: illegal move 05-04, turn=b"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/烂柯神机.cbl",
+      "record_index": 174,
+      "title": "腾天潜渊 红胜",
+      "error": "ply=18: illegal move 24-05, turn=b"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/烂柯神机.cbl",
+      "record_index": 175,
+      "title": "天巧呈能 红胜",
+      "error": "ply=11: illegal move 85-84, turn=r"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/适情雅趣.cbl",
+      "record_index": 189,
+      "title": "2001-11-5 3:13:28 Create",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/陶情弈趣.cbl",
+      "record_index": 44,
+      "title": "封面",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/陶情弈趣.cbl",
+      "record_index": 45,
+      "title": "封面--火烧连营",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/陶情弈趣.cbl",
+      "record_index": 53,
+      "title": "排局证答01",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/陶情弈趣.cbl",
+      "record_index": 54,
+      "title": "排局证答01",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/陶情弈趣.cbl",
+      "record_index": 65,
+      "title": "有奖征答",
+      "error": "empty mainline"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/隐秀斋象戏谱.cbl",
+      "record_index": 16,
+      "title": "作茧自缚",
+      "error": "ply=32: illegal move 07-87, turn=b"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/韬略元机残局谱.cbl",
+      "record_index": 59,
+      "title": "乌江大战",
+      "error": "ply=12: illegal move 05-15, turn=b"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/韬略元机残局谱.cbl",
+      "record_index": 76,
+      "title": "蛛网空悬",
+      "error": "ply=3: illegal move 94-93, turn=r"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/韬略元机残局谱.cbl",
+      "record_index": 100,
+      "title": "观灯十五",
+      "error": "ply=31: illegal move 26-25, turn=r"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/韬略元机残局谱.cbl",
+      "record_index": 141,
+      "title": "声罪致讨",
+      "error": "ply=20: illegal move 75-83, turn=b"
+    },
+    {
+      "source_path": "raw/cnvcs_gupu/韬略元机残局谱.cbl",
+      "record_index": 150,
+      "title": "骑兵破敌",
+      "error": "ply=16: illegal move 51-63, turn=b"
+    }
+  ],
+  "books": {
+    "raw/cnvcs_gupu/事林广记.cbl": {
+      "records": 2,
+      "valid_records": 2,
+      "results": {
+        "0-1": 2
+      },
+      "length_stats": {
+        "count": 2,
+        "total_plies": 41,
+        "max": 23,
+        "mean": 20.5,
+        "median": 20.5
+      }
+    },
+    "raw/cnvcs_gupu/反梅花谱.cbl": {
+      "records": 24,
+      "valid_records": 24,
+      "results": {
+        "1-0": 9,
+        "0-1": 15
+      },
+      "length_stats": {
+        "count": 24,
+        "total_plies": 1155,
+        "max": 74,
+        "mean": 48.125,
+        "median": 44.0
+      }
+    },
+    "raw/cnvcs_gupu/吴氏梅花谱.cbl": {
+      "records": 5,
+      "valid_records": 5,
+      "results": {
+        "*": 5
+      },
+      "length_stats": {
+        "count": 5,
+        "total_plies": 254,
+        "max": 76,
+        "mean": 50.8,
+        "median": 52
+      }
+    },
+    "raw/cnvcs_gupu/吴绍龙象棋谱.cbl": {
+      "records": 15,
+      "valid_records": 15,
+      "results": {
+        "*": 15
+      },
+      "length_stats": {
+        "count": 15,
+        "total_plies": 556,
+        "max": 64,
+        "mean": 37.06666666666667,
+        "median": 41
+      }
+    },
+    "raw/cnvcs_gupu/善庆堂重订梅花.cbl": {
+      "records": 17,
+      "valid_records": 17,
+      "results": {
+        "1-0": 7,
+        "0-1": 10
+      },
+      "length_stats": {
+        "count": 17,
+        "total_plies": 613,
+        "max": 47,
+        "mean": 36.05882352941177,
+        "median": 35
+      }
+    },
+    "raw/cnvcs_gupu/四大名局.cbl": {
+      "records": 6,
+      "valid_records": 6,
+      "results": {
+        "1/2-1/2": 4,
+        "0-1": 2
+      },
+      "length_stats": {
+        "count": 6,
+        "total_plies": 364,
+        "max": 85,
+        "mean": 60.666666666666664,
+        "median": 59.0
+      }
+    },
+    "raw/cnvcs_gupu/崇本堂梅花秘谱.cbl": {
+      "records": 20,
+      "valid_records": 20,
+      "results": {
+        "1-0": 12,
+        "0-1": 8
+      },
+      "length_stats": {
+        "count": 20,
+        "total_plies": 935,
+        "max": 65,
+        "mean": 46.75,
+        "median": 45.0
+      }
+    },
+    "raw/cnvcs_gupu/弈海征帆.cbl": {
+      "records": 50,
+      "valid_records": 50,
+      "results": {
+        "1-0": 50
+      },
+      "length_stats": {
+        "count": 50,
+        "total_plies": 1884,
+        "max": 67,
+        "mean": 37.68,
+        "median": 35.0
+      }
+    },
+    "raw/cnvcs_gupu/心武残编.cbl": {
+      "records": 155,
+      "valid_records": 155,
+      "results": {
+        "1/2-1/2": 146,
+        "1-0": 5,
+        "*": 1,
+        "0-1": 3
+      },
+      "length_stats": {
+        "count": 155,
+        "total_plies": 5030,
+        "max": 77,
+        "mean": 32.45161290322581,
+        "median": 30
+      }
+    },
+    "raw/cnvcs_gupu/无双品象棋谱.cbl": {
+      "records": 4,
+      "valid_records": 4,
+      "results": {
+        "*": 4
+      },
+      "length_stats": {
+        "count": 4,
+        "total_plies": 120,
+        "max": 38,
+        "mean": 30,
+        "median": 32.0
+      }
+    },
+    "raw/cnvcs_gupu/桔中秘全局谱.cbl": {
+      "records": 209,
+      "valid_records": 209,
+      "results": {
+        "1-0": 139,
+        "1/2-1/2": 13,
+        "0-1": 57
+      },
+      "length_stats": {
+        "count": 209,
+        "total_plies": 6866,
+        "max": 64,
+        "mean": 32.85167464114833,
+        "median": 32
+      }
+    },
+    "raw/cnvcs_gupu/桔中秘残局谱.cbl": {
+      "records": 116,
+      "valid_records": 115,
+      "results": {
+        "1-0": 58,
+        "1/2-1/2": 57,
+        "0-1": 1
+      },
+      "length_stats": {
+        "count": 116,
+        "total_plies": 1059,
+        "max": 58,
+        "mean": 9.129310344827585,
+        "median": 5.0
+      }
+    },
+    "raw/cnvcs_gupu/梅花变法谱.cbl": {
+      "records": 12,
+      "valid_records": 12,
+      "results": {
+        "0-1": 9,
+        "*": 1,
+        "1-0": 2
+      },
+      "length_stats": {
+        "count": 12,
+        "total_plies": 626,
+        "max": 78,
+        "mean": 52.166666666666664,
+        "median": 49.0
+      }
+    },
+    "raw/cnvcs_gupu/梅花泉.cbl": {
+      "records": 50,
+      "valid_records": 50,
+      "results": {
+        "*": 20,
+        "1-0": 25,
+        "0-1": 5
+      },
+      "length_stats": {
+        "count": 50,
+        "total_plies": 2412,
+        "max": 74,
+        "mean": 48.24,
+        "median": 47.5
+      }
+    },
+    "raw/cnvcs_gupu/梅花谱.cbl": {
+      "records": 47,
+      "valid_records": 47,
+      "results": {
+        "0-1": 47
+      },
+      "length_stats": {
+        "count": 47,
+        "total_plies": 1970,
+        "max": 102,
+        "mean": 41.91489361702128,
+        "median": 40
+      }
+    },
+    "raw/cnvcs_gupu/梦入神机.cbl": {
+      "records": 152,
+      "valid_records": 150,
+      "results": {
+        "1-0": 136,
+        "1/2-1/2": 15,
+        "0-1": 1
+      },
+      "length_stats": {
+        "count": 152,
+        "total_plies": 2275,
+        "max": 71,
+        "mean": 14.967105263157896,
+        "median": 13.0
+      }
+    },
+    "raw/cnvcs_gupu/河殇.cbl": {
+      "records": 1,
+      "valid_records": 1,
+      "results": {
+        "1/2-1/2": 1
+      },
+      "length_stats": {
+        "count": 1,
+        "total_plies": 92,
+        "max": 92,
+        "mean": 92,
+        "median": 92
+      }
+    },
+    "raw/cnvcs_gupu/泥马渡康王.cbl": {
+      "records": 54,
+      "valid_records": 45,
+      "results": {
+        "1/2-1/2": 20,
+        "1-0": 23,
+        "0-1": 11
+      },
+      "length_stats": {
+        "count": 54,
+        "total_plies": 945,
+        "max": 54,
+        "mean": 17.5,
+        "median": 15.5
+      }
+    },
+    "raw/cnvcs_gupu/湖涯集.cbl": {
+      "records": 61,
+      "valid_records": 61,
+      "results": {
+        "1-0": 19,
+        "1/2-1/2": 39,
+        "0-1": 3
+      },
+      "length_stats": {
+        "count": 61,
+        "total_plies": 1779,
+        "max": 66,
+        "mean": 29.16393442622951,
+        "median": 27
+      }
+    },
+    "raw/cnvcs_gupu/烂柯神机.cbl": {
+      "records": 258,
+      "valid_records": 255,
+      "results": {
+        "*": 258
+      },
+      "length_stats": {
+        "count": 258,
+        "total_plies": 3750,
+        "max": 57,
+        "mean": 14.534883720930232,
+        "median": 13.0
+      }
+    },
+    "raw/cnvcs_gupu/百变金刚.cbl": {
+      "records": 2,
+      "valid_records": 2,
+      "results": {
+        "1-0": 2
+      },
+      "length_stats": {
+        "count": 2,
+        "total_plies": 83,
+        "max": 50,
+        "mean": 41.5,
+        "median": 41.5
+      }
+    },
+    "raw/cnvcs_gupu/百局象棋谱.cbl": {
+      "records": 105,
+      "valid_records": 105,
+      "results": {
+        "1/2-1/2": 93,
+        "1-0": 9,
+        "0-1": 3
+      },
+      "length_stats": {
+        "count": 105,
+        "total_plies": 3256,
+        "max": 77,
+        "mean": 31.00952380952381,
+        "median": 27
+      }
+    },
+    "raw/cnvcs_gupu/石杨遗局.cbl": {
+      "records": 11,
+      "valid_records": 11,
+      "results": {
+        "*": 11
+      },
+      "length_stats": {
+        "count": 11,
+        "total_plies": 575,
+        "max": 75,
+        "mean": 52.27272727272727,
+        "median": 52
+      }
+    },
+    "raw/cnvcs_gupu/绿榕桥.cbl": {
+      "records": 7,
+      "valid_records": 7,
+      "results": {
+        "*": 6,
+        "1/2-1/2": 1
+      },
+      "length_stats": {
+        "count": 7,
+        "total_plies": 223,
+        "max": 58,
+        "mean": 31.857142857142858,
+        "median": 30
+      }
+    },
+    "raw/cnvcs_gupu/自出洞来无敌手.cbl": {
+      "records": 35,
+      "valid_records": 35,
+      "results": {
+        "1-0": 35
+      },
+      "length_stats": {
+        "count": 35,
+        "total_plies": 1325,
+        "max": 55,
+        "mean": 37.857142857142854,
+        "median": 39
+      }
+    },
+    "raw/cnvcs_gupu/蕉窗逸品.cbl": {
+      "records": 10,
+      "valid_records": 10,
+      "results": {
+        "1/2-1/2": 8,
+        "1-0": 2
+      },
+      "length_stats": {
+        "count": 10,
+        "total_plies": 360,
+        "max": 63,
+        "mean": 36,
+        "median": 36.0
+      }
+    },
+    "raw/cnvcs_gupu/蕉竹斋.cbl": {
+      "records": 91,
+      "valid_records": 91,
+      "results": {
+        "1/2-1/2": 82,
+        "1-0": 7,
+        "0-1": 1,
+        "*": 1
+      },
+      "length_stats": {
+        "count": 91,
+        "total_plies": 2609,
+        "max": 60,
+        "mean": 28.67032967032967,
+        "median": 27
+      }
+    },
+    "raw/cnvcs_gupu/象局汇存.cbl": {
+      "records": 77,
+      "valid_records": 77,
+      "results": {
+        "*": 77
+      },
+      "length_stats": {
+        "count": 77,
+        "total_plies": 1441,
+        "max": 41,
+        "mean": 18.714285714285715,
+        "median": 18
+      }
+    },
+    "raw/cnvcs_gupu/适情雅趣.cbl": {
+      "records": 550,
+      "valid_records": 549,
+      "results": {
+        "1-0": 452,
+        "1/2-1/2": 92,
+        "*": 3,
+        "0-1": 3
+      },
+      "length_stats": {
+        "count": 550,
+        "total_plies": 6700,
+        "max": 74,
+        "mean": 12.181818181818182,
+        "median": 11.0
+      }
+    },
+    "raw/cnvcs_gupu/金鹏十八变.cbl": {
+      "records": 51,
+      "valid_records": 51,
+      "results": {
+        "*": 50,
+        "1-0": 1
+      },
+      "length_stats": {
+        "count": 51,
+        "total_plies": 1423,
+        "max": 63,
+        "mean": 27.901960784313726,
+        "median": 27
+      }
+    },
+    "raw/cnvcs_gupu/陶情弈趣.cbl": {
+      "records": 66,
+      "valid_records": 61,
+      "results": {
+        "1/2-1/2": 19,
+        "1-0": 39,
+        "*": 5,
+        "0-1": 3
+      },
+      "length_stats": {
+        "count": 66,
+        "total_plies": 2237,
+        "max": 70,
+        "mean": 33.89393939393939,
+        "median": 34.0
+      }
+    },
+    "raw/cnvcs_gupu/隐秀斋象戏谱.cbl": {
+      "records": 27,
+      "valid_records": 26,
+      "results": {
+        "1/2-1/2": 27
+      },
+      "length_stats": {
+        "count": 27,
+        "total_plies": 923,
+        "max": 57,
+        "mean": 34.18518518518518,
+        "median": 33
+      }
+    },
+    "raw/cnvcs_gupu/韬略元机全局谱.cbl": {
+      "records": 159,
+      "valid_records": 159,
+      "results": {
+        "0-1": 40,
+        "1-0": 119
+      },
+      "length_stats": {
+        "count": 159,
+        "total_plies": 5417,
+        "max": 67,
+        "mean": 34.069182389937104,
+        "median": 33
+      }
+    },
+    "raw/cnvcs_gupu/韬略元机残局谱.cbl": {
+      "records": 182,
+      "valid_records": 177,
+      "results": {
+        "1/2-1/2": 76,
+        "1-0": 106
+      },
+      "length_stats": {
+        "count": 182,
+        "total_plies": 3343,
+        "max": 43,
+        "mean": 18.36813186813187,
+        "median": 17.0
+      }
+    },
+    "raw/cnvcs_saishi/2012年合力杯全国象棋冠军邀请赛.cbl": {
+      "records": 34,
+      "valid_records": 34,
+      "results": {
+        "1/2-1/2": 19,
+        "1-0": 8,
+        "0-1": 7
+      },
+      "length_stats": {
+        "count": 34,
+        "total_plies": 3012,
+        "max": 230,
+        "mean": 88.58823529411765,
+        "median": 87.5
+      }
+    },
+    "raw/cnvcs_saishi/2012年碧桂园杯全国象棋冠军邀请赛.cbl": {
+      "records": 40,
+      "valid_records": 40,
+      "results": {
+        "0-1": 11,
+        "1/2-1/2": 19,
+        "1-0": 10
+      },
+      "length_stats": {
+        "count": 40,
+        "total_plies": 3394,
+        "max": 167,
+        "mean": 84.85,
+        "median": 73.0
+      }
+    },
+    "raw/cnvcs_saishi/2013年碧桂园杯全国象棋冠军邀请赛.cbl": {
+      "records": 40,
+      "valid_records": 40,
+      "results": {
+        "1/2-1/2": 23,
+        "1-0": 11,
+        "0-1": 6
+      },
+      "length_stats": {
+        "count": 40,
+        "total_plies": 3711,
+        "max": 260,
+        "mean": 92.775,
+        "median": 75.0
+      }
+    },
+    "raw/cnvcs_saishi/2014年茅山杯全国象棋冠军邀请赛.cbl": {
+      "records": 33,
+      "valid_records": 33,
+      "results": {
+        "1/2-1/2": 17,
+        "1-0": 6,
+        "0-1": 10
+      },
+      "length_stats": {
+        "count": 33,
+        "total_plies": 2737,
+        "max": 159,
+        "mean": 82.93939393939394,
+        "median": 77
+      }
+    },
+    "raw/cnvcs_wuyang/01五羊杯象棋赛第一届.cbl": {
+      "records": 6,
+      "valid_records": 6,
+      "results": {
+        "0-1": 2,
+        "1-0": 3,
+        "1/2-1/2": 1
+      },
+      "length_stats": {
+        "count": 6,
+        "total_plies": 721,
+        "max": 212,
+        "mean": 120.16666666666667,
+        "median": 94.5
+      }
+    },
+    "raw/cnvcs_wuyang/02五羊杯象棋赛第二届.cbl": {
+      "records": 13,
+      "valid_records": 13,
+      "results": {
+        "0-1": 4,
+        "1-0": 3,
+        "1/2-1/2": 6
+      },
+      "length_stats": {
+        "count": 13,
+        "total_plies": 1342,
+        "max": 180,
+        "mean": 103.23076923076923,
+        "median": 89
+      }
+    },
+    "raw/cnvcs_wuyang/03五羊杯象棋赛第三届.cbl": {
+      "records": 16,
+      "valid_records": 16,
+      "results": {
+        "1-0": 3,
+        "0-1": 7,
+        "1/2-1/2": 6
+      },
+      "length_stats": {
+        "count": 16,
+        "total_plies": 1831,
+        "max": 264,
+        "mean": 114.4375,
+        "median": 100.5
+      }
+    },
+    "raw/cnvcs_wuyang/04五羊杯象棋赛第四届.cbl": {
+      "records": 18,
+      "valid_records": 18,
+      "results": {
+        "1/2-1/2": 7,
+        "0-1": 5,
+        "1-0": 6
+      },
+      "length_stats": {
+        "count": 18,
+        "total_plies": 2022,
+        "max": 299,
+        "mean": 112.33333333333333,
+        "median": 95.0
+      }
+    },
+    "raw/cnvcs_wuyang/05五羊杯象棋赛第五届.cbl": {
+      "records": 17,
+      "valid_records": 17,
+      "results": {
+        "0-1": 4,
+        "1/2-1/2": 8,
+        "1-0": 5
+      },
+      "length_stats": {
+        "count": 17,
+        "total_plies": 2014,
+        "max": 289,
+        "mean": 118.47058823529412,
+        "median": 113
+      }
+    },
+    "raw/cnvcs_wuyang/06五羊杯象棋赛第六届.cbl": {
+      "records": 16,
+      "valid_records": 16,
+      "results": {
+        "1-0": 6,
+        "0-1": 7,
+        "1/2-1/2": 3
+      },
+      "length_stats": {
+        "count": 16,
+        "total_plies": 1794,
+        "max": 234,
+        "mean": 112.125,
+        "median": 91.0
+      }
+    },
+    "raw/cnvcs_wuyang/07五羊杯象棋赛第七届.cbl": {
+      "records": 19,
+      "valid_records": 19,
+      "results": {
+        "1-0": 4,
+        "0-1": 7,
+        "1/2-1/2": 8
+      },
+      "length_stats": {
+        "count": 19,
+        "total_plies": 1666,
+        "max": 177,
+        "mean": 87.6842105263158,
+        "median": 78
+      }
+    },
+    "raw/cnvcs_wuyang/08五羊杯象棋赛第八届.cbl": {
+      "records": 19,
+      "valid_records": 19,
+      "results": {
+        "1/2-1/2": 11,
+        "0-1": 3,
+        "1-0": 5
+      },
+      "length_stats": {
+        "count": 19,
+        "total_plies": 2134,
+        "max": 206,
+        "mean": 112.3157894736842,
+        "median": 102
+      }
+    },
+    "raw/cnvcs_wuyang/09五羊杯象棋赛第九届.cbl": {
+      "records": 18,
+      "valid_records": 18,
+      "results": {
+        "1-0": 5,
+        "1/2-1/2": 8,
+        "0-1": 5
+      },
+      "length_stats": {
+        "count": 18,
+        "total_plies": 2341,
+        "max": 242,
+        "mean": 130.05555555555554,
+        "median": 109.0
+      }
+    },
+    "raw/cnvcs_wuyang/10五羊杯象棋赛第十届.cbl": {
+      "records": 20,
+      "valid_records": 20,
+      "results": {
+        "1/2-1/2": 12,
+        "1-0": 4,
+        "0-1": 4
+      },
+      "length_stats": {
+        "count": 20,
+        "total_plies": 2203,
+        "max": 237,
+        "mean": 110.15,
+        "median": 91.0
+      }
+    },
+    "raw/cnvcs_wuyang/11五羊杯象棋赛第十一届.cbl": {
+      "records": 20,
+      "valid_records": 20,
+      "results": {
+        "1-0": 9,
+        "1/2-1/2": 10,
+        "0-1": 1
+      },
+      "length_stats": {
+        "count": 20,
+        "total_plies": 2131,
+        "max": 258,
+        "mean": 106.55,
+        "median": 86.0
+      }
+    },
+    "raw/cnvcs_wuyang/12五羊杯象棋赛第十二届.cbl": {
+      "records": 16,
+      "valid_records": 16,
+      "results": {
+        "0-1": 3,
+        "1/2-1/2": 10,
+        "1-0": 3
+      },
+      "length_stats": {
+        "count": 16,
+        "total_plies": 1321,
+        "max": 187,
+        "mean": 82.5625,
+        "median": 76.5
+      }
+    },
+    "raw/cnvcs_wuyang/13五羊杯象棋赛第十三届.cbl": {
+      "records": 20,
+      "valid_records": 20,
+      "results": {
+        "1-0": 8,
+        "1/2-1/2": 10,
+        "0-1": 2
+      },
+      "length_stats": {
+        "count": 20,
+        "total_plies": 2049,
+        "max": 217,
+        "mean": 102.45,
+        "median": 80.0
+      }
+    },
+    "raw/cnvcs_wuyang/14五羊杯象棋赛第十四届.cbl": {
+      "records": 21,
+      "valid_records": 21,
+      "results": {
+        "1/2-1/2": 12,
+        "1-0": 4,
+        "0-1": 5
+      },
+      "length_stats": {
+        "count": 21,
+        "total_plies": 2096,
+        "max": 252,
+        "mean": 99.80952380952381,
+        "median": 92
+      }
+    },
+    "raw/cnvcs_wuyang/15五羊杯象棋赛第十五届.cbl": {
+      "records": 21,
+      "valid_records": 21,
+      "results": {
+        "0-1": 6,
+        "1/2-1/2": 11,
+        "1-0": 4
+      },
+      "length_stats": {
+        "count": 21,
+        "total_plies": 1960,
+        "max": 199,
+        "mean": 93.33333333333333,
+        "median": 92
+      }
+    },
+    "raw/cnvcs_wuyang/16五羊杯象棋赛第十六届.cbl": {
+      "records": 7,
+      "valid_records": 7,
+      "results": {
+        "1/2-1/2": 6,
+        "*": 1
+      },
+      "length_stats": {
+        "count": 7,
+        "total_plies": 747,
+        "max": 224,
+        "mean": 106.71428571428571,
+        "median": 81
+      }
+    },
+    "raw/cnvcs_wuyang/17五羊杯象棋赛第十七届.cbl": {
+      "records": 21,
+      "valid_records": 21,
+      "results": {
+        "1/2-1/2": 14,
+        "1-0": 6,
+        "0-1": 1
+      },
+      "length_stats": {
+        "count": 21,
+        "total_plies": 2021,
+        "max": 276,
+        "mean": 96.23809523809524,
+        "median": 83
+      }
+    },
+    "raw/cnvcs_wuyang/18五羊杯象棋赛第十八届.cbl": {
+      "records": 21,
+      "valid_records": 21,
+      "results": {
+        "1-0": 4,
+        "1/2-1/2": 12,
+        "0-1": 5
+      },
+      "length_stats": {
+        "count": 21,
+        "total_plies": 1476,
+        "max": 148,
+        "mean": 70.28571428571429,
+        "median": 55
+      }
+    },
+    "raw/cnvcs_wuyang/19五羊杯象棋赛第十九届.cbl": {
+      "records": 28,
+      "valid_records": 28,
+      "results": {
+        "1/2-1/2": 18,
+        "1-0": 7,
+        "0-1": 3
+      },
+      "length_stats": {
+        "count": 28,
+        "total_plies": 2290,
+        "max": 174,
+        "mean": 81.78571428571429,
+        "median": 68.0
+      }
+    },
+    "raw/cnvcs_wuyang/20五羊杯象棋赛第二十届.cbl": {
+      "records": 21,
+      "valid_records": 21,
+      "results": {
+        "1/2-1/2": 14,
+        "1-0": 6,
+        "0-1": 1
+      },
+      "length_stats": {
+        "count": 21,
+        "total_plies": 1828,
+        "max": 207,
+        "mean": 87.04761904761905,
+        "median": 75
+      }
+    },
+    "raw/cnvcs_wuyang/21五羊杯象棋赛第二十一届.cbl": {
+      "records": 15,
+      "valid_records": 15,
+      "results": {
+        "*": 14,
+        "0-1": 1
+      },
+      "length_stats": {
+        "count": 15,
+        "total_plies": 1182,
+        "max": 186,
+        "mean": 78.8,
+        "median": 57
+      }
+    },
+    "raw/cnvcs_wuyang/22五羊杯象棋赛第二十二届.cbl": {
+      "records": 24,
+      "valid_records": 24,
+      "results": {
+        "1/2-1/2": 16,
+        "1-0": 5,
+        "0-1": 3
+      },
+      "length_stats": {
+        "count": 24,
+        "total_plies": 1866,
+        "max": 192,
+        "mean": 77.75,
+        "median": 67.5
+      }
+    },
+    "raw/cnvcs_wuyang/23五羊杯象棋赛第二十三届.cbl": {
+      "records": 15,
+      "valid_records": 15,
+      "results": {
+        "1/2-1/2": 7,
+        "0-1": 3,
+        "1-0": 4,
+        "*": 1
+      },
+      "length_stats": {
+        "count": 15,
+        "total_plies": 1241,
+        "max": 215,
+        "mean": 82.73333333333333,
+        "median": 77
+      }
+    },
+    "raw/cnvcs_wuyang/24五羊杯象棋赛第二十四届.cbl": {
+      "records": 32,
+      "valid_records": 32,
+      "results": {
+        "1/2-1/2": 20,
+        "*": 1,
+        "1-0": 8,
+        "0-1": 3
+      },
+      "length_stats": {
+        "count": 32,
+        "total_plies": 2683,
+        "max": 259,
+        "mean": 83.84375,
+        "median": 68.0
+      }
+    },
+    "raw/cnvcs_wuyang/25五羊杯象棋赛第二十五届.cbl": {
+      "records": 32,
+      "valid_records": 32,
+      "results": {
+        "1/2-1/2": 21,
+        "1-0": 7,
+        "0-1": 4
+      },
+      "length_stats": {
+        "count": 32,
+        "total_plies": 2455,
+        "max": 181,
+        "mean": 76.71875,
+        "median": 69.0
+      }
+    },
+    "raw/cnvcs_wuyang/26五羊杯象棋赛第二十六届.cbl": {
+      "records": 33,
+      "valid_records": 33,
+      "results": {
+        "1-0": 8,
+        "1/2-1/2": 16,
+        "0-1": 8,
+        "*": 1
+      },
+      "length_stats": {
+        "count": 33,
+        "total_plies": 3169,
+        "max": 235,
+        "mean": 96.03030303030303,
+        "median": 85
+      }
+    },
+    "raw/cnvcs_wuyang/27五羊杯象棋赛第二十七届.cbl": {
+      "records": 38,
+      "valid_records": 38,
+      "results": {
+        "1-0": 13,
+        "0-1": 7,
+        "1/2-1/2": 18
+      },
+      "length_stats": {
+        "count": 38,
+        "total_plies": 3281,
+        "max": 147,
+        "mean": 86.34210526315789,
+        "median": 79.0
+      }
+    },
+    "raw/cnvcs_wuyang/28五羊杯象棋赛第二十八届.cbl": {
+      "records": 34,
+      "valid_records": 34,
+      "results": {
+        "1/2-1/2": 15,
+        "1-0": 9,
+        "0-1": 10
+      },
+      "length_stats": {
+        "count": 34,
+        "total_plies": 3102,
+        "max": 273,
+        "mean": 91.23529411764706,
+        "median": 73.0
+      }
+    },
+    "raw/cnvcs_wuyang/29五羊杯象棋赛第二十九届.cbl": {
+      "records": 30,
+      "valid_records": 30,
+      "results": {
+        "1-0": 8,
+        "1/2-1/2": 14,
+        "0-1": 8
+      },
+      "length_stats": {
+        "count": 30,
+        "total_plies": 3327,
+        "max": 212,
+        "mean": 110.9,
+        "median": 94.5
+      }
+    }
+  },
+  "database": "D:\\象棋\\Data\\dataset.sqlite3",
+  "backup": "D:\\象棋\\backups\\datasets\\cbl-before-20261028-235428-661510\\dataset.sqlite3",
+  "generated_at": "20261028-235428-661510",
+  "ply_unit": "one move by red or black; original full mainline, before truncation/padding"
+}

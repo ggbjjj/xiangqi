@@ -25,6 +25,13 @@ class Haiku5(nn.Module):
         self.cores = nn.ModuleList([Core(c) for _ in range(c.cores)])
         self.policy_head = nn.Linear(c.dim,90)
 
+    def set_dropout(self, probability):
+        """Update residual dropout and its saved config without changing weights."""
+        config = replace(self.config,dropout=probability)
+        for module in self.modules():
+            if isinstance(module,nn.Dropout): module.p = config.dropout
+        self.config = config
+
     def set_context_plies(self, context_plies):
         """Set the saved K/V window independently of sequence length.
 

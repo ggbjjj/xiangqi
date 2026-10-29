@@ -56,18 +56,18 @@ def test_pvp_undo_exactly_one_move_and_pve_returns_to_player():
     assert len(game.history) == 1 and game.turn == 'b'
 
 
-def test_threefold_draw_and_undo_restores_state():
+def test_consecutive_threefold_forces_change_and_undo_restores_state():
     game = Game()
     cycle = [(9, 1, 7, 2), (0, 1, 2, 2), (7, 2, 9, 1), (2, 2, 0, 1)]
     for move in cycle * 2:
         assert game.move(*move) == 'ok'
-    assert game.is_over() and game.winner() is None
-    assert '三次' in game.status
-    assert game.all_legal_moves() == []
+    assert not game.is_over() and game.must_change_move()
+    assert cycle[0] not in game.all_legal_moves()
+    assert game.move(*cycle[0]) == 'illegal'
     assert game.undo()
-    assert not game.is_over() and game.quiet_moves == 7
+    assert not game.is_over() and not game.must_change_move() and game.quiet_moves == 7
     assert game.move(*cycle[-1]) == 'ok'
-    assert game.is_over()
+    assert not game.is_over() and game.must_change_move()
 
 
 def test_quiet_move_limit_and_capture_reset():

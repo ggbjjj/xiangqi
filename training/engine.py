@@ -14,7 +14,11 @@ class ModelOutput:
 
 
 def iter_chunks(model,x,lengths,chunk_size=16):
-    """Common incremental contract: forward_step(input,cache,valid) -> output,cache."""
+    """Fresh cache for each micro-batch; retain detached K/V across its chunks.
+
+    Common incremental contract: forward_step(input,cache,valid) -> output,cache.
+    No cache is attached to the model or reused by the next call.
+    """
     if type(chunk_size) is not int or chunk_size<1: raise ValueError('chunk_size 必须为正整数')
     if x.ndim!=5 or x.shape[2:]!=(15,10,9): raise ValueError('X 必须是 [T,B,15,10,9]')
     valid=valid_steps(lengths,*x.shape[:2],x.device); cache=None
@@ -56,8 +60,9 @@ def train_logical_batch(model,optimizer,batches,weights=LossWeights(),*,chunk_si
     if max_grad_norm<=0: raise ValueError('梯度裁剪上限必须为正')
     if scaler is None: scaler=torch.amp.GradScaler('cuda',enabled=precision=='fp16')
     optimizer.zero_grad(set_to_none=True)
-    # eval keeps rollout/replay behavior identical; autograd remains enabled.
-    model.eval()
+    # Supervised training uses dropout. Active PPO must match the deterministic
+    # rollout policy, so disable dropout for that entire logical batch (with grad).
+    model.train(not bool(weights.ppo and counts.ppo))
     sums={k:0. for k in ('book','ppo','value','entropy')}
     diagnostics={'ratio_sum':0.,'clip_count':0.,'approx_kl_sum':0.}
     active=False
@@ -67,6 +72,13 @@ def train_logical_batch(model,optimizer,batches,weights=LossWeights(),*,chunk_si
         x=batch.x.to(device); loss_batch=batch.loss.to(device)
         real_steps=int(loss_batch.lengths.max()); previous_stop=0
         micro_sums={k:0. for k in sums}; micro_counts=LossCounts()
+        if not real_steps:
+            if progress:
+                progress({'advance':1.,'steps':0,'micro_index':micro_index,'micro_total':len(batches),
+                          'games':len(loss_batch.lengths),'loss':0.,'chunk_loss':0.,
+                          'chunk_terms':dict(micro_sums),'chunk_counts':micro_counts.__dict__,
+                          'terms':dict(micro_sums),'counts':micro_counts.__dict__,'finished_micro':True})
+            continue
         context=(nullcontext() if precision=='none' else torch.autocast(device.type,
                   dtype=torch.bfloat16 if precision=='bf16' else torch.float16))
         with context:
@@ -92,7 +104,7 @@ def train_logical_batch(model,optimizer,batches,weights=LossWeights(),*,chunk_si
                               'loss':sum((-1 if k=='entropy' else 1)*getattr(weights,k)*means[k] for k in means),
                               'chunk_loss':sum((-1 if k=='entropy' else 1)*getattr(weights,k)*chunk_means[k] for k in chunk_means),
                               'chunk_terms':chunk_means,'chunk_counts':result.counts.__dict__,
-                              'terms':means,'finished_micro':stop==real_steps})
+                              'terms':means,'counts':micro_counts.__dict__,'finished_micro':stop==real_steps})
                 previous_stop=stop
                 del output,result
     grad_norm=0.; updated=False
@@ -104,6 +116,7 @@ def train_logical_batch(model,optimizer,batches,weights=LossWeights(),*,chunk_si
             raise FloatingPointError('混合训练梯度非有限值')
         scale=scaler.get_scale(); scaler.step(optimizer); scaler.update()
         updated=scaler.get_scale()>=scale
+        if updated and weights.value and counts.value: model.value_trained=True
         if not torch.isfinite(torch.tensor(grad_norm)): grad_norm=None  # skipped fp16 update; JSON stays finite
     optimizer.zero_grad(set_to_none=True)
     means={k:sums[k]/max(1,getattr(counts,k)) for k in sums}

@@ -100,11 +100,14 @@ class Block(nn.Module):
         self.attn = Attention(cfg)
         self.norm1, self.norm2 = nn.LayerNorm(cfg.dim), nn.LayerNorm(cfg.dim)
         self.ffn = nn.Sequential(nn.Linear(cfg.dim,cfg.ffn_dim),nn.GELU(),nn.Linear(cfg.ffn_dim,cfg.dim))
+        # Keep existing parameter names/order for strict loading of older weights.
+        self.attn_dropout = nn.Dropout(cfg.dropout)
+        self.ffn_dropout = nn.Dropout(cfg.dropout)
 
     def forward(self, x, valid, cache=None, query=None, source=None):
         a = self.attn(x if query is None else query,x if source is None else source,valid,cache)
-        h = self.norm1(x + F.gelu(a))
-        return self.norm2(h + self.ffn(h)).masked_fill(~valid[:,None,None],0)
+        h = self.norm1(x + self.attn_dropout(F.gelu(a)))
+        return self.norm2(h + self.ffn_dropout(self.ffn(h))).masked_fill(~valid[:,None,None],0)
 
 
 class Core(nn.Module):
