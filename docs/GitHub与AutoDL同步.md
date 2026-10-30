@@ -165,6 +165,8 @@ uv run --locked --extra gpu python -m training.dashboard --logdir runs --host 12
 
 ## 训练结束后给我哪些数据
 
+服务器可先用 `uv run --locked --extra gpu python -m training.runs --family Opus` 查询训练 run_id，再加 `--run-id 实际训练run_id` 查看学习率、轮数、参数 ID 和验证结果。查询只读、不加载模型；只取回参数 SQLite 时仍能查询其中的 run_id 和检查点，但完整启动配置、批次进度及结束状态需要对应 `runs/` 日志。用法见 [查询训练 run_id 与对应训练信息](../指令.md#查询训练-run_id-与对应训练信息)。
+
 需要两类文件：**对应模型的完整参数 SQLite + 本次完整运行日志**。参数 SQLite 已经包含所有 ID、累计完成轮数、权重、优化器、默认指针和评估指标；不需要再拆成 pt 文件。日志包含 config.json、metrics.jsonl、report.json、best.json（有完整验证评优时）、last_completed.json、tensorboard/ 及 **validation/**（逐片困惑度 JSONL、区间 PNG/SVG、每轮报告和 latest.json），整个本次运行目录取回。独立 `training.evaluate` 的输出另存于 `runs/evaluation/`，需要时一并取回。
 
 | 目的 | 取回内容 |
