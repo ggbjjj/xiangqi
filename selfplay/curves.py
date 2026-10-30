@@ -6,6 +6,7 @@ from pathlib import Path
 from torch.utils.tensorboard import SummaryWriter
 
 from .store import empty_outcomes
+from .lengths import PlyHistogram
 
 
 class SelfPlayCurves:
@@ -19,7 +20,8 @@ class SelfPlayCurves:
         self.history=(self.directory/'outcomes.jsonl').open('w',encoding='utf-8')
         self.state={**config,'status':'running','completed_games':0,'saved_games':0,'buffered_games':0,
                     'discarded_games':0,'unfinished_games':0,'outcomes':empty_outcomes(),
-                    'saved_outcomes':empty_outcomes(),'discarded_outcomes':empty_outcomes()}
+                    'saved_outcomes':empty_outcomes(),'discarded_outcomes':empty_outcomes(),
+                    'ply_histogram':PlyHistogram().snapshot(),'saved_ply_histogram':PlyHistogram().snapshot()}
         self.closed=False
         self._record()
 
@@ -42,12 +44,17 @@ class SelfPlayCurves:
         self.state.update(completed_games=row['game'],saved_games=row['saved_games'],
                           buffered_games=row['buffered_games'],outcomes=row['outcomes'],
                           saved_outcomes=row['saved_outcomes'])
+        for key in ('ply_histogram','saved_ply_histogram'):
+            self.state[key]=row.get(key)
         self._record()
 
     def finish(self,report):
         for key in ('completed_games','saved_games','discarded_games','unfinished_games',
                     'outcomes','saved_outcomes','discarded_outcomes','generated_steps','inference_batches'):
             self.state[key]=report[key]
+        self.state['elapsed_seconds']=report.get('elapsed_seconds')
+        for key in ('ply_histogram','saved_ply_histogram'):
+            self.state[key]=report.get(key)
         self.state.update(status='interrupted' if report['interrupted'] else 'complete',buffered_games=0)
         self._record()
         (self.directory/'report.json').write_text(

@@ -102,6 +102,7 @@ def test_search_ai_uses_the_same_exclusion_without_mutating_game():
 def test_neural_ai_cannot_rank_or_choose_a_masked_top_logit():
     torch=pytest.importorskip('torch')
     from ai import NeuralAI
+    from training.exploration import Exploration
     class PreferLoop(torch.nn.Module):
         def forward_step(self,x,cache=None):
             logits=torch.zeros(len(x),8100,device=x.device)
@@ -113,6 +114,9 @@ def test_neural_ai_cannot_rank_or_choose_a_masked_top_logit():
     assert len(ranked)==len(game.all_legal_moves())
     assert LEFT[0] not in {move for move,prob in ranked}
     assert ai.choose_move(game.board,game.turn,history=game.history) in game.all_legal_moves()
+    ai=NeuralAI(PreferLoop(),exploration=Exploration(1.2,1.),generator=torch.Generator().manual_seed(12))
+    for _ in range(12):
+        assert ai.choose_move(game.board,game.turn,history=game.history) in game.all_legal_moves()
 
 
 def test_no_legal_alternative_is_a_loss_in_game_and_generator(monkeypatch):

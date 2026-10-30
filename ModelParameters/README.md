@@ -2,19 +2,19 @@
 
 `HaiKu/models.sqlite3` 和 `Opus/models.sqlite3` 分别存储对应系列的架构配置、各版本权重 BLOB、版本名称与说明、默认版本、优化器状态、训练进度、评估指标及 SHA-256。网络代码统一放在项目的 `models/HaiKu/` 与 `models/Opus/`。
 
-HaiKu 当前默认版本为 **HaiKu-5.1**；Opus 当前默认为 **ID2 / Opus-5-e1-bcdb8df2**，已完成 1 轮古谱策略训练，游戏公开名称为 **Opus-5**。Opus 的初始化 ID1 保留，本轮价值损失系数为 0，价值头尚未训练。后台 `load_default_model('HaiKu')` / `load_default_model('Opus')` 自动加载各自默认参数。完整目录、命令和 Opus 训练说明见 [Opus-5 模型与参数管理](../docs/Opus-5模型与参数管理.md)。
+HaiKu 当前默认版本为 **HaiKu-5.1**；Opus 当前默认为 **ID5 / Opus-5-e4-9cb66110**，游戏公开名称 **Opus-5** 也绑定 ID5。本次从 ID2 追加 3 轮，累计实际完成 4 轮，策略和价值头均已训练；ID1–ID4 保留。后台 `load_default_model('HaiKu')` / `load_default_model('Opus')` 自动加载各自默认参数。完整目录、命令和 Opus 训练说明见 [Opus-5 模型与参数管理](../docs/Opus-5模型与参数管理.md)。
 
 根目录旧的 `models.sqlite3` 保留为原始备份，迁移后不再使用它写入；旧 HaiKu 续训路径由后台兼容转向新库。迁移校验记录在 `migration_20261027.json`，两轮权重、优化器和公开名称绑定均保留。
 
-当前库已从 `D:\模型参数信息` 导入两轮正式训练权重，第一轮和第二轮分别保存，不覆盖或删除。原始日志、指标与恢复配置见 [训练归档](../TrainingRecords/README.md)。正常训练每个 epoch 提交一个事务保存检查点，`latest` 和 `best` 别名按 run_id 分组。
+当前库已从 `D:\模型参数信息` 导入 HaiKu 两轮及 Opus 累计四轮正式训练权重，各轮分别保存。原始日志、指标与恢复配置见 [训练归档](../TrainingRecords/README.md)。正常训练每个 epoch 提交一个事务保存检查点，`latest` 和 `best` 别名按 run_id 分组。
 
 | 玩家可见名称 | 累计已完成轮数（仅后台记录） | 参数 ID |
 |---|---:|---|
 | HaiKu-5 | 1 | ddba0b0639364a4cbd663f51ab74d3d7 |
 | HaiKu-5.1 | 2 | e2bbff5da4cb42a29484fd1d03a095cb |
-| Opus-5 | 1 | Opus/ID2：bcdb8df21f5048a88c28f34efb949b8f |
+| Opus-5 | 4 | Opus/ID5：9cb661107ad3460eaa1c7f99572aa1a0 |
 
-两份 HaiKu 参数属于同一网络、同一次训练的连续轮次。`HaiKu-5` 的绑定保持第一轮；HaiKu 的 `latest` 和 `best` 都指向第二轮。HaiKu 当前续训配置已指向第二轮，下次从第 3 轮开始。第一轮权重和训练状态已逐字节核验未改写。Opus 单独保存在其参数库；本次运行的 `latest` 和 `best` 均指向 ID2，[训练记录与曲线](../TrainingRecords/Opus/opus-mixed-20261028-094701-460939/README.md)已归档。
+两份 HaiKu 参数属于同一网络、同一次训练的连续轮次。`HaiKu-5` 的绑定保持第一轮；HaiKu 的 `latest` 和 `best` 都指向第二轮。HaiKu 当前续训配置已指向第二轮，下次从第 3 轮开始。第一轮权重和训练状态已逐字节核验未改写。Opus 单独保存在其参数库；本次运行 `opus-mixed-20261029-152352-250666` 的 `latest` 和 `best` 均指向 ID5，[训练记录与导入校验](../TrainingRecords/Opus/opus-mixed-20261029-152352-250666/README.md)已归档。旧 Opus 第一轮的别名和日志保留。
 `checkpoints` 是后台训练记录；每轮有独立的 `checkpoint_id`（参数 ID）。`model_releases` 存储公开名称与参数 ID 的绑定。当前 `HaiKu-5` 对应第 1 轮，`HaiKu-5.1` 对应第 2 轮；名称由管理员决定，不由训练轮数自动生成。游戏列表仅返回 `{"name":"HaiKu-5"}` 这样的名称，不返回训练信息或参数 ID。
 
 只有 `published=1` 且 `global_step>0` 的检查点允许绑定；这里 `published` 是检查点的可发布标志，不等于自动加入玩家列表。`--smoke` 检查点不可绑定。训练保存新轮次不改变既有名称对应的参数。

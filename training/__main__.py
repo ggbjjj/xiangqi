@@ -35,7 +35,7 @@ def main(argv=None,*,cancel_event=None):
     p.add_argument('--book-source',choices=BOOK_SOURCE_LABELS,default='main',
                    help='棋谱读取方式：main 主棋谱库、endgames 残局库、both 两库合读并去重；训练/验证共用')
     p.add_argument('--selfplay-db',type=Path)
-    p.add_argument('--rollout-run',help='本轮冻结快照生成的 run_id；禁止自动合并历史版本')
+    p.add_argument('--rollout-run','--selfplay-run',dest='rollout_run',help='仅加载此生成 run_id 已保存的棋局；selfplay/mixed 必填')
     p.add_argument('--T',type=int,default=120,help='所选棋谱来源训练裁剪长度；按 T 单步连续分段，尾段补零')
     p.add_argument('--context-plies',type=int,help='HaiKu KV 窗口；古谱训练默认 30，自弈/混合默认沿用采样检查点')
     p.add_argument('--validation-length','--L',dest='validation_length',type=int,default=32,help='验证独立切片长度 L，默认 32')
@@ -76,6 +76,9 @@ def main(argv=None,*,cancel_event=None):
     best_record=None; best_loss=float('inf')
     try:
         validate_evaluation(args.validation_length,args.ngram)
+        if args.source in ('selfplay','mixed') and not args.rollout_run:
+            raise ValueError('自弈或混合训练必须指定 --rollout-run；用 python -m selfplay.runs --family '
+                             f'{args.family} 查询，禁止加载全部自弈运行')
         if min(args.T,args.C,args.epochs,args.batch_size,args.micro_batch,args.tbptt_steps,args.cpu_threads)<=0:
             raise ValueError('T、C、轮数、批量、分段和线程必须为正')
         if args.batch_size%args.micro_batch: raise ValueError('batch-size 必须能被 micro-batch 整除')
@@ -122,6 +125,7 @@ def main(argv=None,*,cancel_event=None):
         if args.source in ('selfplay','mixed'):
             dataset=SelfPlayDataset(args.selfplay_db or selfplay_db(args.family),args.rollout_run,
                                     family=args.family,max_generated_plies=args.max_selfplay_plies,C=args.C)
+            args.rollout_run=dataset.run_id
             if dataset.run['checkpoint_id']!=base['checkpoint_id'] or dataset.run['weights_sha256']!=base['sha256']:
                 raise ValueError('采样版本与起始训练版本不一致；请使用同一冻结快照生成的近期数据')
             if args.family=='HaiKu' and weights.ppo:
@@ -166,6 +170,9 @@ def main(argv=None,*,cancel_event=None):
                       f'跨库胜负冲突停用价值标签：{books.summary["value_conflicts"]:,} 局',flush=True)
         else:
             print('棋谱读取方式：未读取棋谱（仅自弈）',flush=True)
+        if args.source in ('selfplay','mixed'):
+            print(f'自弈读取 run_id：{args.rollout_run}；仅加载此运行已保存的 {selfplay_games:,} 局 '
+                  f'→ {selfplay_segments:,} 段（C={args.C}）',flush=True)
         label=BOOK_SOURCE_LABELS[args.book_source]
         print(f'本次训练总局数（切段后）：{len(dataset):,}；原始棋局数：{book_games+selfplay_games:,}\n'
               f'棋谱（{label}）：{book_games:,} 局 → {book_segments:,} 段（T={args.T}）；'

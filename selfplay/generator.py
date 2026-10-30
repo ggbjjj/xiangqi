@@ -1,6 +1,7 @@
 """Freeze an explicitly named checkpoint; sample both colors without MCTS or engines."""
 from dataclasses import dataclass
 import copy
+import time
 import torch
 from encoder import encode_state,action_to_move,legal_action_mask
 from data_pipeline.notation import STANDARD_FEN,from_fen,to_fen
@@ -8,7 +9,8 @@ from model_store import load_version
 from training.exploration import Exploration,sample_actions
 from training.loss import split_output
 from .store import (Snapshot,create_run,save_games,finish_run,committed_game_ids,
-                    OUTCOME_KEYS,empty_outcomes,committed_outcomes)
+                    OUTCOME_KEYS,empty_outcomes,committed_outcomes,committed_ply_histogram)
+from .lengths import PlyHistogram
 from training.control import WorkInterrupted,check_stop
 from repetition import RepetitionTracker,REPETITION_POLICY
 
@@ -117,13 +119,18 @@ class SelfPlayGenerator:
             if terminal: raise ValueError('暖启动前缀已经结束，不能继续走棋')
             check.move(action,legal)
         if check.terminal(0)[0]: raise ValueError('探索起点已经终局')
+        started=time.monotonic()
         path,run_id=create_run(self.snapshot,self.exploration,self.rules,self.has_value_head,self.seed,path,
-                               save_every=save_every,requested_games=games,micro_batch=micro_batch,device=str(self.device))
+                               save_every=save_every,requested_games=games,micro_batch=micro_batch,device=str(self.device),
+                               start_fen=start_fen,prefix=prefix)
         ids=[]; pending=[]; completed=0; interrupted=False; active=[]; generated_steps=0; inference_batches=0
         outcomes=empty_outcomes(); saved_outcomes=empty_outcomes()
+        lengths=PlyHistogram(); saved_lengths=PlyHistogram()
         def commit_pending():
             ids.extend(save_games(path,run_id,pending))
-            for game in pending: saved_outcomes[OUTCOME_KEYS[game['result']]]+=1
+            for game in pending:
+                saved_outcomes[OUTCOME_KEYS[game['result']]]+=1
+                saved_lengths.add(len(game['steps']))
             pending.clear()
         try:
             if on_start: on_start({'run_id':run_id,'data_db':str(path),'requested_games':games})
@@ -151,12 +158,14 @@ class SelfPlayGenerator:
                                 'termination':reason,'final_fen':to_fen(position.board,position.turn),'generation_index':wave_start+i})
                             completed+=1
                             outcomes[OUTCOME_KEYS[result]]+=1
+                            lengths.add(len(records[i]))
                             if len(pending)>=save_every:
                                 commit_pending()
                             if progress:
                                 progress({'game':completed,'saved_games':len(ids),'buffered_games':len(pending),
                                     'plies':len(records[i]),'result':result,'termination':reason,'micro_batch':size,
-                                    'outcomes':dict(outcomes),'saved_outcomes':dict(saved_outcomes)})
+                                    'outcomes':dict(outcomes),'saved_outcomes':dict(saved_outcomes),
+                                    'ply_histogram':lengths.snapshot(),'saved_ply_histogram':saved_lengths.snapshot()})
                             check_stop(cancel_event)
                         else: masks[i]=torch.from_numpy(legal)
                     if not any(active): break
@@ -179,11 +188,15 @@ class SelfPlayGenerator:
         saved_outcomes=committed_outcomes(path,run_id)
         discarded=completed-len(ids)
         pending.clear()
-        finish_run(path,run_id,completed=completed,saved=len(ids),discarded=discarded,interrupted=interrupted)
+        elapsed=time.monotonic()-started
+        finish_run(path,run_id,completed=completed,saved=len(ids),discarded=discarded,interrupted=interrupted,
+                   elapsed_seconds=elapsed,generated_steps=generated_steps,inference_batches=inference_batches)
         return {'run_id':run_id,'model':self.snapshot,'data_db':str(path),'game_ids':ids,
                 'requested_games':games,'completed_games':completed,'saved_games':len(ids),
                 'discarded_games':discarded,'unfinished_game_discarded':any(active),'unfinished_games':sum(active),
                 'save_every':save_every,'micro_batch':micro_batch,'generated_steps':generated_steps,
                 'inference_batches':inference_batches,'interrupted':interrupted,
+                'elapsed_seconds':elapsed,
                 'outcomes':outcomes,'saved_outcomes':saved_outcomes,
+                'ply_histogram':lengths.snapshot(),'saved_ply_histogram':committed_ply_histogram(path,run_id),
                 'discarded_outcomes':{key:outcomes[key]-saved_outcomes[key] for key in outcomes}}

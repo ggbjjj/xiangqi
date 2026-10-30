@@ -78,6 +78,8 @@ class SelfPlayDataset(Dataset):
         if max_generated_plies is not None and (type(max_generated_plies) is not int or max_generated_plies<1):
             raise ValueError('最大读取步数必须为正整数')
         if type(C) is not int or C<1: raise ValueError('C 必须为正整数')
+        from selfplay.runs import resolve_run_id
+        run_id=resolve_run_id(path,run_id,family=family)
         self.path,self.run_id,self.max_generated_plies=path,run_id,max_generated_plies
         self.C=C
         with closing(connect(path,True)) as conn:

@@ -1,6 +1,5 @@
 import argparse
 from dataclasses import asdict
-from datetime import datetime,timezone
 import json
 import math
 from pathlib import Path
@@ -15,6 +14,9 @@ def main(argv=None):
     if argv and argv[0]=='count':
         from .stats import main as count_main
         return count_main(argv[1:])
+    if argv and argv[0]=='runs':
+        from .runs import main as runs_main
+        return runs_main(argv[1:])
     p=argparse.ArgumentParser(description='指定模型与明确参数版本，冻结快照生成自弈棋局')
     p.add_argument('--family',choices=['HaiKu','Opus'],required=True)
     selector=p.add_mutually_exclusive_group()
@@ -25,7 +27,7 @@ def main(argv=None):
     p.add_argument('--data-db',type=Path,help='默认 Data/SelfPlay/模型系列/games.sqlite3，所有版本共用')
     p.add_argument('--games',type=int,default=1)
     p.add_argument('--save-every','--K',type=int,default=16,help='每 K 局完整对局原子提交；默认 16，中断丢弃当前缓冲')
-    p.add_argument('--micro-batch',type=int,help='GPU 同时生成的局数：2 的幂且整除 K；默认选择不超过 16 的最大可用值')
+    p.add_argument('--micro-batch',type=int,help='同时交给 GPU 推理的局数 M；可显式指定 1/2/4/8/16/32/64 等，须整除 K；默认不超过 16')
     p.add_argument('--max-plies',type=int,default=1000)
     p.add_argument('--quiet-plies',type=int,default=120)
     p.add_argument('--repetition',type=int,default=3,help='相同循环连续重复的局面次数；默认3，下一走方须变招')
@@ -47,6 +49,7 @@ def main(argv=None):
     from training.progress import ConsoleProgress
     from model_store import get_default_parameter_id,get_latest_parameter_id,parameter_number
     from .curves import SelfPlayCurves
+    from .store import set_run_log_directory
     curves=None
     try:
         if args.cpu_threads<1: raise ValueError('cpu-threads 必须为正')
@@ -71,10 +74,10 @@ def main(argv=None):
         if args.prefix_json: kwargs['prefix']=json.loads(args.prefix_json.read_text(encoding='utf-8'))
         def on_start(row):
             nonlocal curves
-            name=datetime.now(timezone.utc).strftime(f'{args.family.lower()}-selfplay-%Y%m%d-%H%M%S-')+row['run_id'][:8]
-            curves=SelfPlayCurves(args.output/name,{**vars(args),**row,'model':asdict(generator.snapshot)})
+            curves=SelfPlayCurves(args.output/row['run_id'],{**vars(args),**row,'model':asdict(generator.snapshot)})
+            set_run_log_directory(row['data_db'],row['run_id'],curves.directory)
             logdir=ROOT/'runs' if args.output.resolve().is_relative_to(ROOT/'runs') else args.output.resolve()
-            print(f'自弈胜负统计：{curves.directory.resolve()}\n'
+            print(f'自弈 run_id（训练使用）：{row["run_id"]}\n自弈胜负统计：{curves.directory.resolve()}\n'
                   f'查看窗口：python -m training.dashboard --logdir "{logdir}" --port 6006\n'
                   '浏览器打开 http://127.0.0.1:6006/，选择本次自弈运行；每秒刷新。',flush=True)
         with StopController() as stop, ConsoleProgress(f'{args.family} 自弈',args.games,device=device,unit='局',
@@ -86,7 +89,9 @@ def main(argv=None):
                 counts=row['outcomes']
                 display.update(1,games=1,phase='批量生成',已保存=row['saved_games'],缓冲=row['buffered_games'],微批上限=micro_batch,
                                红胜=counts['red_wins'],黑胜=counts['black_wins'],和棋=counts['draws'])
-                if args.no_progress: print(json.dumps(row,ensure_ascii=False),flush=True)
+                if args.no_progress:
+                    print(json.dumps({k:v for k,v in row.items() if k not in ('ply_histogram','saved_ply_histogram')},
+                                     ensure_ascii=False),flush=True)
             def on_step(row):
                 display.update(work=row['steps'],batches=row['batches'],phase=row['phase'],并行局数=row['active'])
             report=generator.generate(args.games,cancel_event=stop,progress=on_game,on_step=on_step,on_start=on_start,**kwargs)
@@ -97,8 +102,10 @@ def main(argv=None):
         report['model']=asdict(report['model'])
         report['output']=str(curves.directory.resolve())
         counts=report['saved_outcomes']
+        print(f'自弈 run_id（训练使用）：{report["run_id"]}',flush=True)
         print(f'本次已保存棋局胜负：红胜 {counts["red_wins"]} 局 / 黑胜 {counts["black_wins"]} 局 / 和棋 {counts["draws"]} 局',flush=True)
-        print(json.dumps(report,ensure_ascii=False,indent=2)); return report
+        print(json.dumps({k:v for k,v in report.items() if k not in ('ply_histogram','saved_ply_histogram')},
+                         ensure_ascii=False,indent=2)); return report
     except (ValueError,OSError,sqlite3.Error) as error: p.exit(1,f'{error}\n')
     finally:
         if curves is not None: curves.close()

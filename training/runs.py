@@ -166,6 +166,8 @@ def print_run(entry,*,detail=False):
     for directory in entry['log_dirs']: print(f'  日志目录：{directory}')
     print(f'  训练来源：{config.get("source", "books" if config else "未记录")}；'
           f'棋谱读取方式：{_text(config.get("book_source"))}；计划轮数：{_text(config.get("epochs"))}')
+    if config.get('source') in ('selfplay','mixed'):
+        print(f'  自弈生成 run_id：{_text(config.get("rollout_run"))}（仅此运行的已保存棋局）')
     print(f'  起始参数：{_id(entry["base_parameter_id"])}；起始检查点：{_text(config.get("base_checkpoint_id",config.get("resume")))}')
     print('  学习率：'+_text(config.get('lr'))+'；权重衰减：'+_text(config.get('weight_decay'))+
           '；逻辑批量：'+_text(config.get('batch_size'))+'；微批量：'+_text(config.get('micro_batch')))

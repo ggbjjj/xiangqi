@@ -1,5 +1,6 @@
 from contextlib import closing
 from dataclasses import dataclass,asdict
+from datetime import datetime,timezone
 import json
 import math
 from pathlib import Path
@@ -75,27 +76,32 @@ def init_store(family,path=None):
              'status':"TEXT NOT NULL DEFAULT 'complete'",'saved_games':'INTEGER NOT NULL DEFAULT 0',
              'completed_games':'INTEGER NOT NULL DEFAULT 0','discarded_games':'INTEGER NOT NULL DEFAULT 0',
              'parameter_id':'INTEGER','completed_epochs':'INTEGER NOT NULL DEFAULT 0',
-             'micro_batch':'INTEGER NOT NULL DEFAULT 1','device':'TEXT'}.items():
+             'micro_batch':'INTEGER NOT NULL DEFAULT 1','device':'TEXT',
+             'finished_at':'TEXT','elapsed_seconds':'REAL','generated_steps':'INTEGER',
+             'inference_batches':'INTEGER','start_fen':'TEXT','prefix_json':'TEXT',
+             'log_directory':'TEXT'}.items():
             if name not in columns: conn.execute(f'ALTER TABLE runs ADD COLUMN {name} {declaration}')
         if 'generation_index' not in {r[1] for r in conn.execute('PRAGMA table_info(games)')}:
             conn.execute('ALTER TABLE games ADD COLUMN generation_index INTEGER')
         conn.execute("INSERT OR IGNORE INTO metadata VALUES ('family',?)",(family,))
-        conn.execute("INSERT INTO metadata VALUES ('schema_version','3') ON CONFLICT(key) DO UPDATE SET value='3'")
+        conn.execute("INSERT INTO metadata VALUES ('schema_version','4') ON CONFLICT(key) DO UPDATE SET value='4'")
     return path
 
 
 def create_run(snapshot,exploration,rules,has_value_head,seed,path=None,*,save_every=16,requested_games=None,
-               micro_batch=1,device=None):
-    path=init_store(snapshot.family,path); ident=uuid4().hex
+               micro_batch=1,device=None,start_fen=None,prefix=()):
+    path=init_store(snapshot.family,path)
+    ident=datetime.now(timezone.utc).strftime(f'{snapshot.family.lower()}-selfplay-%Y%m%d-%H%M%S-%f-')+uuid4().hex[:8]
     if model_family(snapshot.architecture)!=snapshot.family: raise ValueError('快照模型系列不一致')
     with closing(connect(path)) as conn,conn:
         conn.execute('''INSERT INTO runs(run_id,family,architecture,checkpoint_id,version_name,weights_sha256,
                         model_config_json,exploration_json,rules_json,has_value_head,seed,save_every,requested_games,
-                        status,parameter_id,completed_epochs,micro_batch,device) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
+                        status,parameter_id,completed_epochs,micro_batch,device,start_fen,prefix_json)
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
                      (ident,snapshot.family,snapshot.architecture,snapshot.checkpoint_id,snapshot.version_name,
                       snapshot.weights_sha256,json.dumps(snapshot.model_config),json.dumps(asdict(exploration)),
                       json.dumps(asdict(rules)),int(has_value_head),seed,save_every,requested_games,'running',
-                      snapshot.parameter_id,snapshot.completed_epochs,micro_batch,device))
+                      snapshot.parameter_id,snapshot.completed_epochs,micro_batch,device,start_fen,json.dumps(list(prefix))))
     return path,ident
 
 
@@ -131,10 +137,31 @@ def save_game(path,run_id,**game):
     return save_games(path,run_id,[game])[0]
 
 
-def finish_run(path,run_id,*,completed,saved,discarded,interrupted):
+def finish_run(path,run_id,*,completed,saved,discarded,interrupted,elapsed_seconds=None,
+               generated_steps=None,inference_batches=None):
     with closing(connect(path)) as conn,conn:
-        conn.execute('UPDATE runs SET status=?,completed_games=?,saved_games=?,discarded_games=? WHERE run_id=?',
-                     ('interrupted' if interrupted else 'complete',completed,saved,discarded,run_id))
+        conn.execute('''UPDATE runs SET status=?,completed_games=?,saved_games=?,discarded_games=?,
+                        finished_at=?,elapsed_seconds=?,generated_steps=?,inference_batches=? WHERE run_id=?''',
+                     ('interrupted' if interrupted else 'complete',completed,saved,discarded,
+                      datetime.now(timezone.utc).isoformat(),elapsed_seconds,generated_steps,inference_batches,run_id))
+
+
+def set_run_log_directory(path,run_id,directory):
+    with closing(connect(path)) as conn,conn:
+        if conn.execute('UPDATE runs SET log_directory=? WHERE run_id=?',
+                        (str(Path(directory).resolve()),run_id)).rowcount!=1:
+            raise ValueError('自弈 run_id 不存在')
+
+
+def validate_store(conn,family=None):
+    """Inspect an existing rollout database without creating or migrating it."""
+    tables={r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    if not {'metadata','runs','games','steps'}<=tables: raise ValueError('目标不是自弈棋局库')
+    row=conn.execute("SELECT value FROM metadata WHERE key='family'").fetchone()
+    if row is None: raise ValueError('自弈棋局库没有模型系列标记')
+    stored=model_family(row[0])
+    if family is not None and stored!=model_family(family): raise ValueError('自弈数据模型系列不匹配')
+    return stored
 
 
 def committed_game_ids(path,run_id):
@@ -156,6 +183,15 @@ def committed_outcomes(path,run_id):
         for row in conn.execute('SELECT result,COUNT(*) FROM games WHERE run_id=? GROUP BY result',(run_id,)):
             if row[0] in OUTCOME_KEYS: counts[OUTCOME_KEYS[row[0]]]=row[1]
     return counts
+
+
+def committed_ply_histogram(path,run_id):
+    from .lengths import PlyHistogram
+    histogram=PlyHistogram()
+    with closing(connect(path,True)) as conn:
+        for row in conn.execute('SELECT ply_count,COUNT(*) FROM games WHERE run_id=? GROUP BY ply_count',(run_id,)):
+            histogram.add(row[0],row[1])
+    return histogram.snapshot()
 
 
 def list_runs(path):

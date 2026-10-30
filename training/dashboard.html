@@ -49,6 +49,7 @@ h2{font-size:16px;font-weight:600;margin:0 0 7px}.charthead{display:flex;align-i
 <div class="grid">
 <section class="chart"><h2>自对弈胜负局数分布</h2><p id="outcomeSummary">等待第一局完成</p><div class="plot"><canvas id="outcomes" role="img" aria-label="自对弈红胜、黑胜、和棋局数及占比"></canvas><div class="tooltip"></div></div><p class="axis">横轴：对局结果　纵轴：局数；每局仅计数一次</p></section>
 <section class="chart"><h2>胜负累计变化</h2><p>按完整对局结束顺序累计，不做平滑</p><div class="legend"><span><i class="dot" style="background:#c65e60"></i>红胜</span><span><i class="dot" style="background:#347bbf"></i>黑胜</span><span><i class="dot" style="background:#288b7c"></i>和棋</span></div><div class="plot"><canvas id="outcomeTrend" role="img" aria-label="红胜、黑胜、和棋累计局数曲线"></canvas><div class="tooltip"></div></div><p class="axis">横轴：已完成对局数　纵轴：各结果累计局数</p></section>
+<section class="chart" style="grid-column:1/-1"><h2>对局总步数分布</h2><p id="plySummary">等待第一局完成</p><div class="plot"><canvas id="plyDistribution" role="img" aria-label="自对弈实际结束步数区间与局数分布"></canvas><div class="tooltip"></div></div><p class="axis">横轴：实际步数区间（每 32 个单步）；纵轴：局数。红黑合计，按每局真实结束步数统计，暖启动前缀和填充不计入。</p></section>
 </div>
 <p class="note">“已完成”包含尚未提交的完整棋局；“已保存”只统计本次生成已提交到 SQLite 的棋局。中断会丢弃未提交缓冲和未完成棋局，丢弃局数单独显示；未完成棋局不会算作和棋。红黑按实际棋子颜色统计。模型红黑双方使用同一冻结参数，胜负比例不代表相对其他模型的棋力。窗口关闭不影响生成，生成结束后仍可查看统计。</p>
 </section>
@@ -131,6 +132,37 @@ function drawPerplexity(){
   tooltip.style.display='block';tooltip.style.left=Math.max(0,Math.min(w-200,x+12))+'px';tooltip.style.top='32px';
  };canvas.onmouseleave=()=>{tooltip.style.display='none'};
 }
+function drawPlyDistribution(scope){
+ const histogram=selfplay[scope==='saved'?'saved_ply_histogram':'ply_histogram'];
+ const canvas=byId('plyDistribution'),rect=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+ canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);
+ const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+ const w=rect.width,h=rect.height,left=60,right=w-16,top=30,bottom=h-55,bins=histogram?.bins||[];
+ const tooltip=canvas.nextElementSibling;tooltip.style.display='none';canvas.onmousemove=null;canvas.onmouseleave=null;
+ ctx.font='12px "Microsoft YaHei",sans-serif';ctx.fillStyle='#75879a';ctx.textAlign='center';
+ if(!bins.length){
+  const message=histogram?'等待完整对局结束后统计实际步数':'此旧日志未记录实时步数分布';
+  ctx.fillText(message,w/2,h/2);byId('plySummary').textContent=message;return;
+ }
+ byId('plySummary').textContent=`${scope==='saved'?'已保存':'已完成'} ${number(histogram.total)} 局；最短 ${number(histogram.min)} 步，平均 ${number(histogram.mean)} 步，最长 ${number(histogram.max)} 步；未完成局不计入`;
+ const ymax=Math.max(1,...bins.map(b=>b.count))*1.2,slot=(right-left)/bins.length,stride=Math.max(1,Math.ceil(65/slot));
+ for(let i=0;i<=4;i++){
+  const y=bottom-(bottom-top)*i/4;ctx.strokeStyle='#e9eef5';ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();
+  ctx.textAlign='right';ctx.fillStyle='#75879a';ctx.fillText(Math.round(ymax*i/4).toLocaleString(),left-8,y+4);
+ }
+ bins.forEach((bin,i)=>{
+  const height=(bottom-top)*bin.count/ymax,x=left+slot*i+slot*.14;
+  ctx.fillStyle='#6487bb';ctx.fillRect(x,bottom-height,slot*.72,height);ctx.textAlign='center';ctx.fillStyle='#526a83';
+  if(i%stride===0)ctx.fillText(bin.label,left+slot*(i+.5),bottom+22);
+  if(bin.count&&slot>=35)ctx.fillText(number(bin.count),left+slot*(i+.5),bottom-height-8);
+ });
+ canvas.onmousemove=event=>{
+  const x=event.clientX-rect.left,index=Math.floor((x-left)/slot);
+  if(index<0||index>=bins.length){tooltip.style.display='none';return}
+  const bin=bins[index];tooltip.textContent=`${bin.label} 步：${number(bin.count)} 局（${bin.percent.toFixed(2)}%）`;
+  tooltip.style.display='block';tooltip.style.left=Math.max(0,Math.min(w-220,x+12))+'px';tooltip.style.top='32px';
+ };canvas.onmouseleave=()=>{tooltip.style.display='none'};
+}
 function renderSelfplay(){
  const scope=byId('outcomeScope').value,counts=selfplay[scope==='saved'?'saved_outcomes':'outcomes'];
  const entries=[['red_wins','红胜','#c65e60','redWins','redPercent'],['black_wins','黑胜','#347bbf','blackWins','blackPercent'],['draws','和棋','#288b7c','draws','drawPercent']];
@@ -163,13 +195,14 @@ function renderSelfplay(){
   tooltip.style.display='block';tooltip.style.left=Math.max(0,Math.min(w-200,x+12))+'px';tooltip.style.top='40px';
  };canvas.onmouseleave=()=>{tooltip.style.display='none'};
  draw('outcomeTrend',entries.map(([key,name,color])=>({name,color,points:rows(`selfplay/${scope}_${key}`)})),'已完成对局数','累计局数',false);
+ drawPlyDistribution(scope);
 }
 function render(){
  const generation=selfplay!==null;
  for(const id of ['trainingCards','trainingGrid','trainingNote','lossLevelControl','smoothControl'])byId(id).hidden=generation;
  for(const id of ['selfplayView','outcomeScopeControl'])byId(id).hidden=!generation;
  byId('pageTitle').textContent=generation?'自对弈胜负统计':'训练曲线与评优';
- byId('pageSubtitle').textContent=generation?'红胜、黑胜、和棋的局数分布与累计变化':'查看实时损失、验证表现与参数更新进度';
+ byId('pageSubtitle').textContent=generation?'红胜、黑胜、和棋，以及实际结束步数的区间分布':'查看实时损失、验证表现与参数更新进度';
  if(generation){renderSelfplay();return}
  const level=byId('level').value,prefix='loss/'+level+'_';
  byId('lossAxis').textContent='横轴：'+axes[level]+'　纵轴：损失值';

@@ -114,7 +114,7 @@ class OpponentModelMenu:
         self.page, self.selected_name = 0,None
         self.loading, self.result = False,None
         self._results = queue.Queue()
-        self.message = '请选择模型，再点击开始对弈'
+        self.message = '请选择模型，再设置观战走子方式' if mode=='ai_vs_ai' else '请选择模型，再点击开始对弈'
         self._pinned=None
         try:
             if parameter_family is not None:
@@ -191,7 +191,7 @@ class OpponentModelMenu:
             for rect,choice in self.model_rects:
                 if rect.collidepoint(pos):
                     self.selected_name = choice['name']
-                    self.message = '已选择模型，点击开始对弈'
+                    self.message = '已选择模型，继续设置走子方式' if self.mode=='ai_vs_ai' else '已选择模型，点击开始对弈'
                     break
 
     def run(self):
@@ -233,20 +233,156 @@ class OpponentModelMenu:
         text_fit(self.screen,f'{self.page+1} / {(len(self.choices)+4)//5}',self.small_font,
                  COLOR_LIGHT,pygame.Rect(205,455,150,30),True)
         text_fit(self.screen,self.message,self.small_font,COLOR_GOLD,pygame.Rect(34,494,492,26),True)
-        for label,rect in [('返回',self.back_rect),('准备中…' if self.loading else '开始对弈',self.start_rect)]:
+        start_label='下一步' if self.mode=='ai_vs_ai' else '开始对弈'
+        for label,rect in [('返回',self.back_rect),('准备中…' if self.loading else start_label,self.start_rect)]:
             enabled = rect==self.back_rect or (self.selected_name is not None and not self.loading)
             pygame.draw.rect(self.screen,COLOR_GOLD if enabled else (94,74,51),rect,border_radius=7)
             text_fit(self.screen,label,self.button_font,COLOR_DARK if enabled else COLOR_LIGHT,rect,True)
         pygame.display.flip()
 
 
+class SelfPlayOptionsMenu:
+    """Choose a fixed behavior policy before either color starts playing."""
+
+    def __init__(self,model_name,*,can_explore=True,strategy='explore',temperature=1.2,epsilon=0.02):
+        pygame.init()
+        self.screen=pygame.display.set_mode((MENU_W,MENU_H))
+        pygame.display.set_caption('中国象棋 · 观战走子设置')
+        self.clock=pygame.time.Clock()
+        self.title_font,self.button_font,self.small_font=font(32,True),font(21),font(16)
+        self.model_name,self.can_explore=model_name,can_explore
+        self.strategy=strategy if can_explore else 'greedy'
+        self.values={'temperature':str(temperature),'epsilon':str(epsilon)}
+        self.active=None; self.cursor=0; self.select_all=False
+        self.result=None; self.message='确认走子方式后，红黑双方使用相同设置'
+        self.strategy_rects={'explore':pygame.Rect(34,143,238,52),'greedy':pygame.Rect(288,143,238,52)}
+        self.input_rects={'temperature':pygame.Rect(292,276,234,42),'epsilon':pygame.Rect(292,350,234,42)}
+        self.back_rect,self.start_rect=pygame.Rect(34,522,142,42),pygame.Rect(340,522,186,42)
+
+    @property
+    def settings(self):
+        return {'strategy':self.strategy,**self.values}
+
+    def _start(self):
+        if self.strategy=='greedy':
+            self.result=('start',{'strategy':'greedy'})
+            return
+        if not self.can_explore:
+            self.message='探索采样需要选择 HaiKu 或 Opus 模型'
+            return
+        try:
+            from training.exploration import Exploration
+            config=Exploration(float(self.values['temperature']),float(self.values['epsilon']))
+        except (ValueError,OverflowError):
+            self.message='请输入有效数字：τ > 0，0 ≤ ε ≤ 1'
+            return
+        self.result=('start',{'strategy':'explore','temperature':config.temperature,'epsilon':config.epsilon})
+
+    def _focus(self,key):
+        self.active=key; self.cursor=len(self.values[key]); self.select_all=True
+
+    def _on_click(self,pos):
+        if self.back_rect.collidepoint(pos): self.result=('back',None); return
+        if self.start_rect.collidepoint(pos): self._start(); return
+        for strategy,rect in self.strategy_rects.items():
+            if rect.collidepoint(pos):
+                if strategy=='explore' and not self.can_explore: return
+                self.strategy=strategy; self.active=None; self.select_all=False
+                self.message='确认走子方式后，红黑双方使用相同设置'
+                return
+        if self.strategy=='explore' and self.can_explore:
+            for key,rect in self.input_rects.items():
+                if rect.collidepoint(pos): self._focus(key); return
+        self.active=None; self.select_all=False
+
+    def _on_key(self,event):
+        if event.key==pygame.K_ESCAPE: self.result=('back',None); return
+        if event.key in (pygame.K_RETURN,pygame.K_KP_ENTER): self._start(); return
+        if self.strategy!='explore' or not self.can_explore: return
+        if event.key==pygame.K_TAB:
+            self._focus('epsilon' if self.active=='temperature' else 'temperature'); return
+        if self.active is None: return
+        key=self.active; value=self.values[key]
+        if event.key==pygame.K_a and getattr(event,'mod',0)&pygame.KMOD_CTRL:
+            self.select_all=True; return
+        if event.key in (pygame.K_HOME,pygame.K_END,pygame.K_LEFT,pygame.K_RIGHT):
+            self.cursor=(0 if event.key==pygame.K_HOME else len(value) if event.key==pygame.K_END else
+                         max(0,self.cursor-1) if event.key==pygame.K_LEFT else min(len(value),self.cursor+1))
+            self.select_all=False; return
+        if event.key in (pygame.K_BACKSPACE,pygame.K_DELETE):
+            if self.select_all: value=''; self.cursor=0
+            elif event.key==pygame.K_BACKSPACE and self.cursor:
+                value=value[:self.cursor-1]+value[self.cursor:]; self.cursor-=1
+            elif event.key==pygame.K_DELETE: value=value[:self.cursor]+value[self.cursor+1:]
+        else:
+            typed=getattr(event,'unicode','')
+            if not typed or any(c not in '0123456789.eE+-' for c in typed): return
+            if self.select_all: value=''; self.cursor=0
+            if len(value)+len(typed)>24: return
+            value=value[:self.cursor]+typed+value[self.cursor:]; self.cursor+=len(typed)
+        self.values[key]=value; self.select_all=False
+
+    def run(self):
+        while self.result is None:
+            self._draw()
+            for event in pygame.event.get():
+                if event.type==pygame.QUIT: self.result=('quit',None)
+                elif event.type==pygame.KEYDOWN: self._on_key(event)
+                elif event.type==pygame.MOUSEBUTTONDOWN and event.button==1: self._on_click(event.pos)
+                if self.result is not None: break
+            self.clock.tick(30)
+        return self.result
+
+    def _draw(self):
+        self.screen.fill(COLOR_DARK)
+        text_fit(self.screen,'AI 观战走子设置',self.title_font,COLOR_GOLD,pygame.Rect(20,28,520,45),True)
+        text_fit(self.screen,'模型：'+self.model_name,self.small_font,COLOR_LIGHT,pygame.Rect(34,88,492,28),True)
+        for strategy,label in (('explore','探索采样'),('greedy','贪心最优')):
+            rect=self.strategy_rects[strategy]; enabled=strategy=='greedy' or self.can_explore
+            selected=self.strategy==strategy
+            pygame.draw.rect(self.screen,COLOR_GOLD if selected else (94,74,51),rect,border_radius=7)
+            text_fit(self.screen,label,self.button_font,COLOR_DARK if selected else COLOR_LIGHT if enabled else (140,132,119),rect,True)
+        description=('按合法动作概率随机采样，保留不同走法' if self.strategy=='explore' else
+                     '每步选择模型概率最大的合法动作' if self.can_explore else '内置搜索按搜索结果选步；探索参数适用于模型')
+        text_fit(self.screen,description,self.small_font,COLOR_LIGHT,pygame.Rect(34,211,492,28),True)
+        enabled=self.strategy=='explore' and self.can_explore
+        for key,label,y in (('temperature','温度 τ（Tao）',276),('epsilon','随机探索 ε（epsilon）',350)):
+            rect=self.input_rects[key]
+            text_fit(self.screen,label,self.button_font,COLOR_LIGHT if enabled else (160,150,133),pygame.Rect(34,y,250,42))
+            pygame.draw.rect(self.screen,COLOR_LIGHT if enabled else (94,74,51),rect,border_radius=6)
+            if self.active==key and enabled: pygame.draw.rect(self.screen,COLOR_GOLD,rect,2,border_radius=6)
+            value=self.values[key]
+            if self.active==key and self.select_all:
+                pygame.draw.rect(self.screen,(207,190,155),(rect.x+10,rect.y+8,min(rect.width-20,self.button_font.size(value)[0]+4),26))
+            text_fit(self.screen,value,self.button_font,COLOR_DARK if enabled else (172,160,139),rect.inflate(-20,-12))
+            if self.active==key and not self.select_all and enabled and pygame.time.get_ticks()%1000<600:
+                x=min(rect.right-10,rect.x+10+self.button_font.size(value[:self.cursor])[0])
+                pygame.draw.line(self.screen,COLOR_DARK,(x,rect.y+9),(x,rect.bottom-9),1)
+        text_fit(self.screen,'τ > 0：越大越分散；ε 在 0–1 之间：均匀随机比例',self.small_font,
+                 COLOR_LIGHT,pygame.Rect(34,412,492,28),True)
+        text_fit(self.screen,'τ=1、ε=0 仍会按概率抽样，贪心请选“贪心最优”',self.small_font,
+                 COLOR_LIGHT,pygame.Rect(34,444,492,28),True)
+        text_fit(self.screen,self.message,self.small_font,COLOR_GOLD,pygame.Rect(34,482,492,28),True)
+        for label,rect in (('返回选模型',self.back_rect),('开始观战',self.start_rect)):
+            pygame.draw.rect(self.screen,COLOR_GOLD,rect,border_radius=7)
+            text_fit(self.screen,label,self.button_font,COLOR_DARK,rect,True)
+        pygame.display.flip()
+
+
 class XiangqiUI:
-    def __init__(self, mode, net=None, num_simulations=50, depth=2, model_db=MODEL_DB):
+    def __init__(self, mode, net=None, num_simulations=50, depth=2, model_db=MODEL_DB,*,watch_options=None):
         if mode not in MODE_LABELS:
             raise ValueError(f'unknown mode: {mode}')
         pygame.init()
         self.mode, self.net = mode, net
         self._match_net = net
+        self.exploration=None
+        if mode=='ai_vs_ai' and net is not None:
+            options={'strategy':'explore','temperature':1.2,'epsilon':0.02,**(watch_options or {})}
+            if options['strategy'] not in ('explore','greedy'): raise ValueError('未知观战走子方式')
+            if options['strategy']=='explore':
+                from training.exploration import Exploration
+                self.exploration=Exploration(options['temperature'],options['epsilon'])
         self.opponent_name = getattr(net,'display_name','AI 模型') if net is not None else '内置搜索'
         self.num_simulations, self.depth = num_simulations, depth
         self.player_color = {'pve_red': 'r', 'pve_black': 'b'}.get(mode)
@@ -257,7 +393,7 @@ class XiangqiUI:
         self.font, self.small_font, self.button_font = font(34, True), font(17), font(18)
         self.game = Game()
         self.selected, self.legal_targets, self.last_move = None, [], None
-        self.message = '红方先行，请选择棋子'
+        self.message = 'AI 将自动走子，空格可暂停' if mode=='ai_vs_ai' else '红方先行，请选择棋子'
         self.ai = self._make_ai() if mode != 'pvp' else None
         self.paused = False
         self.running = False
@@ -296,7 +432,7 @@ class XiangqiUI:
 
     def _make_ai(self):
         if self._match_net is not None:
-            return NeuralAI(self._match_net)
+            return NeuralAI(self._match_net,exploration=self.exploration)
         return SearchAI(max_depth=self.depth)
 
     def _is_ai_turn(self):
@@ -711,6 +847,9 @@ class XiangqiUI:
                  'AI：' + ('未启用' if self.ai is None else self.opponent_name),
                  '状态：' + ('已结束' if self.game.is_over() else '待重试' if self.ai_failed else '暂停' if self.paused else '思考中' if self.thinking else '进行中'),
                  '']
+        if self.mode=='ai_vs_ai':
+            lines[2]='探索采样' if self.exploration is not None else '贪心最优' if self._match_net is not None else '内置搜索选步'
+            lines[3]=(f'τ={self.exploration.temperature:g}  ε={self.exploration.epsilon:g}' if self.exploration is not None else '')
         for i, line in enumerate(lines):
             text_fit(self.screen, line, self.small_font, COLOR_DARK, pygame.Rect(542, 92 + i * 26, 206, 24))
         pygame.draw.rect(self.screen,COLOR_GOLD,self.hint_rect,border_radius=6)
@@ -763,6 +902,7 @@ class XiangqiUI:
 
 def run_app(model_path=MODEL_DB, model_name=None, initial_mode=None, depth=2,*,parameter_family=None,parameter_id=None):
     mode,preferred_name = initial_mode,model_name
+    watch_settings={}
     try:
         while True:
             if mode is None:
@@ -779,7 +919,15 @@ def run_app(model_path=MODEL_DB, model_name=None, initial_mode=None, depth=2,*,p
                     mode = None
                     continue
                 preferred_name = selection.selected_name
-            app = XiangqiUI(mode,net,depth=depth,model_db=model_path)
+            match_options={}
+            if mode=='ai_vs_ai':
+                settings_menu=SelfPlayOptionsMenu(preferred_name or '内置搜索',can_explore=net is not None,**watch_settings)
+                action,watch_options=settings_menu.run()
+                watch_settings=settings_menu.settings
+                if action=='quit': break
+                if action=='back': continue
+                match_options['watch_options']=watch_options
+            app = XiangqiUI(mode,net,depth=depth,model_db=model_path,**match_options)
             back_to_menu = app.run()
             if app.restart_requested: continue
             if not back_to_menu:

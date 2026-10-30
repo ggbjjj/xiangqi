@@ -175,7 +175,7 @@ uv run --locked --extra gpu python -m training.dashboard --logdir runs --host 12
 | 加载/检查 Opus 新参数 | ModelParameters/Opus/models.sqlite3 |
 | 看训练曲线、分析损失、核查最佳 ID 与中断进度 | 本次 runs/mixed/实际run_id/，或自定义的具体运行目录 |
 | 分析新自弈棋局，或下次继续使用这些经验 | Data/SelfPlay/对应模型/games.sqlite3 |
-| 查看本批自弈红胜/黑胜/和棋分布、占比与累计变化 | 本次 runs/selfplay/模型-selfplay-时间-run_id前缀/ 完整日志目录 |
+| 查看本批自弈胜负、实际结束步数分布与累计变化 | 本次 runs/selfplay/生成run_id/ 完整日志目录 |
 | 使用旧 resume_train.py 继续原优化器训练 | 另保留相应 TrainingRecords 续训配置；新混合训练入口不依赖旧 current_resume.json |
 
 先停止训练和生成，再导出。推荐用一条命令打包；数据库通过 SQLite backup API 生成独立快照，包含已经提交的 WAL 数据，不直接复制正在使用的主文件：

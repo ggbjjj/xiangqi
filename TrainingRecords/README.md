@@ -1,18 +1,18 @@
 # 训练记录与下次续训
 
-HaiKu 当前已累计完成 **2 轮**：第二轮从第一轮检查点继续训练，完成训练、验证和最终测试集评估。两轮参数及全部历史归档保留。Opus 已单独完成 **1 轮古谱策略训练**，价值损失未启用。
+HaiKu 当前已累计完成 **2 轮**：第二轮从第一轮检查点继续训练，完成训练、验证和最终测试集评估。两轮参数及全部历史归档保留。Opus 当前已累计完成 **4 轮**：第一轮只训练策略；本次从 ID2 追加 3 轮，同时训练策略与价值。
 
 | 游戏模型名称 | 已完成轮数 | 参数 ID | 训练记录 |
 |---|---:|---|---|
 | HaiKu-5 | 1 | ddba0b0639364a4cbd663f51ab74d3d7 | [第一轮归档](haiku5-20261025-105746-759121/训练记录与续训说明.md) |
 | HaiKu-5.1 | 2 | e2bbff5da4cb42a29484fd1d03a095cb | [第二轮归档](haiku5-20261025-105746-759121-epoch2-20261026/训练记录与续训说明.md) |
-| Opus-5 | 1 | Opus/ID2：bcdb8df21f5048a88c28f34efb949b8f | [第一轮归档与曲线](Opus/opus-mixed-20261028-094701-460939/README.md) |
+| Opus-5 | 4 | Opus/ID5：9cb661107ad3460eaa1c7f99572aa1a0 | [追加三轮归档与校验](Opus/opus-mixed-20261029-152352-250666/README.md) |
 
 `ModelParameters/HaiKu/models.sqlite3` 同时存储两轮权重和优化器状态；`HaiKu-5` 保持第一轮参数，`HaiKu-5.1` 使用第二轮并设为默认。根目录旧参数库保留为迁移备份；Opus 参数独立存放在 `ModelParameters/Opus/models.sqlite3`。玩家列表仅显示模型名称，训练轮次、指标和参数 ID 只在后台记录。
 
 `current_resume.json` 现指向第二轮检查点，默认再完成第 3 轮。第一轮固定恢复配置仍在 `haiku5-20261025-105746-759121/resume_config.json`，导入第二轮前的当前配置也保存在新归档 `previous_current_resume.json`。
 
-Opus 使用独立的 `ModelParameters/Opus/models.sqlite3`；当前默认为 ID2，公开名称为 Opus-5。原始日志保存在 `runs/mixed/opus-mixed-20261028-094701-460939/`，导入校验、损失曲线和统计信息见上表的 Opus 归档。该版本只训练策略，客户端不使用其未训练的价值头预测局势。
+Opus 使用独立的 `ModelParameters/Opus/models.sqlite3`；当前默认及公开名称 Opus-5 均指向 ID5，其价值头已训练。最新原始日志保存在 `runs/mixed/opus-mixed-20261029-152352-250666/`；[第一轮归档与曲线](Opus/opus-mixed-20261028-094701-460939/README.md)及其只训练策略的 ID2 保留。使用 `python -m training --family Opus` 时，未指定 `--id` 或 `--version` 会自动选择累计实际完成轮数最多的 ID，当前为 ID5；`--epochs` 为追加轮数。
 
 ## 在 AutoDL 继续第三轮
 

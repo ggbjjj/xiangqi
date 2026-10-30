@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "family": "Opus",
+  "created_at": "2026-10-30T11:18:15+08:00",
+  "code": {
+    "commit": "01c963cea0fd63249aa84eee6461e2cf91ec6ebf",
+    "has_local_changes": false
+  },
+  "selfplay_included": false,
+  "files": [
+    {
+      "path": "ModelParameters/Opus/models.sqlite3",
+      "bytes": 253808640,
+      "sha256": "66d7fc86152012c0ced97585de38666d01f2329debf4b39578f008ea48419153"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/best.json",
+      "bytes": 2701,
+      "sha256": "71f3148f66640686724145b924a0576beb62823730f487f6599246ba15f38ec3"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/config.json",
+      "bytes": 3239,
+      "sha256": "44a6c0cd384ec49eb83fb86e94d946fd6875bda3cec9f681ee918540b3982911"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/last_completed.json",
+      "bytes": 2725,
+      "sha256": "597d56d028647cfdbb58c63ad1fcb2a99dd640021c8b0969521c6547083abfe5"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/metrics.jsonl",
+      "bytes": 2452177,
+      "sha256": "63a89b92427ebb70a7eab0d20875346bb889d65fc3d753adad86d82c554489b5"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/report.json",
+      "bytes": 3490,
+      "sha256": "b96ab18ca29686a80c7a817071385c97e84c11eaae4df884475028c2e8b02e02"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/tensorboard/events.out.tfevents.1793287432.I2c06db2bc7032013fd.7296.0",
+      "bytes": 6595153,
+      "sha256": "32075ae4313fd7764f45c631389915b73e9bffa0190311ca7b9927697fd08e9c"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/tensorboard/loss_weights.json",
+      "bytes": 68,
+      "sha256": "b1063c91eb6d20f198f007d389b2c337c4d9abfe0386fcce81a8d8284d80886a"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/validation/epoch-0001/perplexities.jsonl",
+      "bytes": 1333898,
+      "sha256": "c6e370f6019c29f72c05e1e4a46e6b1e40ef1620b64cb5a1ffc7f5964527a4a0"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/validation/epoch-0001/perplexity-histogram.png",
+      "bytes": 79282,
+      "sha256": "261f7acb0c1cbcace5c93d12971bd016914374630cf6d09e6f76a07143709ad5"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/validation/epoch-0001/perplexity-histogram.svg",
+      "bytes": 59155,
+      "sha256": "aebfb507473dfee9fec44797f3bdb0d7162708aad0fe7729f585ed3e365afa98"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/validation/epoch-0001/report.json",
+      "bytes": 2338,
+      "sha256": "1d63b55e98914daaafc0c62254901cc4b920c8b1d81abb519c2ef7f85b0a055d"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/validation/epoch-0002/perplexities.jsonl",
+      "bytes": 1333953,
+      "sha256": "ff6ce0f9e4ee649c5b63c18d91898ca12a5f486dc63a9904ce232f49d80fbe76"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/validation/epoch-0002/perplexity-histogram.png",
+      "bytes": 85338,
+      "sha256": "0ff5d8739d9764c582d974e31cd439d1ffa828e93dad84fa892da66fd7e1cd7d"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/validation/epoch-0002/perplexity-histogram.svg",
+      "bytes": 62266,
+      "sha256": "2e31a4a8d34015ada23218ee3f6305fb878771b1d61c8fc522e2da5bd5c54422"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/validation/epoch-0002/report.json",
+      "bytes": 2340,
+      "sha256": "42cca0ff6d5d61df3107c8053fb2dec08c40631a9d67d938bb2d5b0820baf843"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/validation/epoch-0003/perplexities.jsonl",
+      "bytes": 1334077,
+      "sha256": "41a020f15cd5a5c8d219afee4a30920f29198037dd1b7253f7691f9438d22fee"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/validation/epoch-0003/perplexity-histogram.png",
+      "bytes": 84936,
+      "sha256": "84222c230e2328f2028098bb1081a07337080333cbf4fbb7f707f5aa85db58e5"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/validation/epoch-0003/perplexity-histogram.svg",
+      "bytes": 62268,
+      "sha256": "0308b1eafc698e01a33c3e542e099773225123b47f93741362c9bc4ed2f32137"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/validation/epoch-0003/report.json",
+      "bytes": 2339,
+      "sha256": "5d6e98d25bbad4db455c0919da5226352b3b9df41eff72b806b76aaa79654fad"
+    },
+    {
+      "path": "runs/mixed/opus-mixed-20261029-152352-250666/validation/latest.json",
+      "bytes": 2339,
+      "sha256": "5d6e98d25bbad4db455c0919da5226352b3b9df41eff72b806b76aaa79654fad"
+    }
+  ],
+  "note": "数据库使用 SQLite backup 生成独立一致快照；导出前请先停止训练和生成，以使日志与参数对应。"
+}

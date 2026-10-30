@@ -127,9 +127,18 @@ def load_network(model_path=None, model_name=None, *, family=None,parameter_id=N
 
 class NeuralAI:
     """Direct legal policy inference. History is replayed with per-layer K/V caches."""
-    def __init__(self, net, device='cpu'):
+    def __init__(self, net, device='cpu', *, exploration=None, generator=None):
         self.net, self.device = net, device
         self.net.to(device).eval()
+        self.exploration=exploration
+        self.generator=generator
+        if exploration is not None:
+            import torch
+            from training.exploration import Exploration
+            self.exploration=Exploration(exploration.temperature,exploration.epsilon)
+            if self.generator is None:
+                self.generator=torch.Generator(device='cpu')
+                self.generator.seed()
         self.reset()
 
     def reset(self):
@@ -193,5 +202,16 @@ class NeuralAI:
             return [(action_to_move(int(ids[i])),float(probs[ids[i]])) for i in order]
 
     def choose_move(self, board, turn, cancel_event=None, history=None):
+        if self.exploration is not None:
+            import torch
+            from encoder import legal_action_mask,action_to_move
+            from training.exploration import sample_action
+            self._forward_position(board,turn,history,cancel_event)
+            with torch.inference_mode():
+                legal=torch.from_numpy(legal_action_mask(board,turn,history)).to(self.device)
+                if not legal.any(): return None
+                action,_=sample_action(self._logits[0],legal,self.exploration,self.generator)
+            if cancel_event is not None and cancel_event.is_set(): raise CancelledError()
+            return action_to_move(action)
         ranked = self.rank_moves(board,turn,history=history,topk=1,cancel_event=cancel_event)
         return ranked[0][0] if ranked else None

@@ -16,7 +16,7 @@ ModelParameters/
 
 数据库保存权重和优化器 BLOB、架构配置、版本名称 `version_name`、说明 `description`、训练指标与 SHA-256。`model_defaults` 为每个系列指定一个默认检查点；`model_releases` 将游戏公开名称固定绑定到某个检查点，两个设置分别管理。
 
-当前 HaiKu 默认是已完成两轮训练的 HaiKu-5.1，第一轮 HaiKu-5 仍保留。Opus 默认是 **ID2 / `Opus-5-e1-bcdb8df2`**，已完成 1 轮古谱策略训练，公开名称为 Opus-5，初始化 ID1 保留。本轮策略/价值/PPO/动作熵系数为 1/0/0/0，价值头尚未训练。[本次训练归档与曲线](../TrainingRecords/Opus/opus-mixed-20261028-094701-460939/README.md)含参数导入和校验信息。旧数据库及历史训练归档保留，原 HaiKu 续训记录使用 HaiKu 新库。
+当前 HaiKu 默认是已完成两轮训练的 HaiKu-5.1，第一轮 HaiKu-5 仍保留。Opus 默认是 **ID5 / `Opus-5-e4-9cb66110`**，公开名称 Opus-5 也绑定 ID5，ID1–ID4 保留。本次从 ID2 追加 3 轮，累计实际完成 4 轮；追加训练的策略/价值/PPO/动作熵系数为 1/1/0/0，价值头已训练。验证平均切片困惑度为 8.000253（L=32，n=16）。[本次训练归档与导入校验](../TrainingRecords/Opus/opus-mixed-20261029-152352-250666/README.md)含每轮指标及备份位置。旧数据库及历史训练归档保留，原 HaiKu 续训记录使用 HaiKu 新库。
 
 ## 网络与接口
 

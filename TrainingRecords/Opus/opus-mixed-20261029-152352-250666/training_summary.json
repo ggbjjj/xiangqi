@@ -1,0 +1,349 @@
+{
+  "imported_at": "2026-10-30T11:30:19.078356+08:00",
+  "family": "Opus",
+  "run_id": "opus-mixed-20261029-152352-250666",
+  "source_archive": "D:/模型参数信息/return-Opus-20261030-111815-696692.tar.gz",
+  "archive_sha256": "8f203614f182c7cdcdeee038fff0fe4c4bcc121bc350ba57aa73e5e04b58b0d9",
+  "verified_manifest_files": 21,
+  "source_database_sha256": "66d7fc86152012c0ced97585de38666d01f2329debf4b39578f008ea48419153",
+  "installed_database": "ModelParameters/Opus/models.sqlite3",
+  "installed_database_sha256": "8e9e3dbb75585a9375a1191de46641b49e4b98fe4d1b121c4b45f4d68a0ba817",
+  "backup_database": "backups/Opus/before-import-20261030-111815/models.sqlite3",
+  "backup_database_sha256": "dd144b514fe0b23ca6774c6cd3bcc482170a347733127ca46c05ca23bc7d955c",
+  "previous_default_checkpoint_id": "bcdb8df21f5048a88c28f34efb949b8f",
+  "previous_releases": [
+    {
+      "name": "Opus-5",
+      "checkpoint_id": "bcdb8df21f5048a88c28f34efb949b8f",
+      "enabled": 1,
+      "sort_order": 0,
+      "updated_at": "2026-10-28T13:51:42.753Z"
+    }
+  ],
+  "default_parameter_id": 5,
+  "public_name": "Opus-5",
+  "public_checkpoint_id": "9cb661107ad3460eaa1c7f99572aa1a0",
+  "completed_epochs_this_run": 3,
+  "completed_epochs": 4,
+  "training_config": {
+    "family": "Opus",
+    "version": null,
+    "parameter_id": null,
+    "source": "books",
+    "model_db": null,
+    "book_db": "/hy-tmp/xiangqi/Data/dataset.sqlite3",
+    "endgame_db": "/hy-tmp/xiangqi/Data/endgames.sqlite3",
+    "book_source": "both",
+    "selfplay_db": null,
+    "rollout_run": null,
+    "T": 32,
+    "context_plies": null,
+    "validation_length": 32,
+    "ngram": 16,
+    "C": 128,
+    "book_limit": 0,
+    "validation": "auto",
+    "validation_limit": 0,
+    "max_selfplay_plies": null,
+    "lambda_book": null,
+    "lambda_value": null,
+    "lambda_ppo": null,
+    "lambda_entropy": null,
+    "ppo_clip": 0.2,
+    "tbptt_steps": 16,
+    "epochs": 3,
+    "batch_size": 128,
+    "micro_batch": 64,
+    "lr": 0.0003,
+    "weight_decay": 0.0001,
+    "dropout": 0.1,
+    "clip_grad": 1.0,
+    "seed": 42,
+    "device": "cuda",
+    "precision": "none",
+    "cpu_threads": 4,
+    "output": "/hy-tmp/xiangqi/runs/mixed",
+    "run_name": null,
+    "description": "",
+    "smoke": false,
+    "set_default": false,
+    "progress_interval": 1.0,
+    "no_progress": false,
+    "weights": {
+      "book": 1.0,
+      "ppo": 0.0,
+      "value": 1.0,
+      "entropy": 0.0
+    },
+    "base_checkpoint_id": "bcdb8df21f5048a88c28f34efb949b8f",
+    "evaluation_version": "book-slice-ppl-sliding-context-v1",
+    "selection_metric": "mean_slice_perplexity",
+    "training_samples": 84853,
+    "book_games": 29181,
+    "book_segments": 84853,
+    "book_crop_version": "contiguous-book-crops-v1",
+    "book_reader_version": "multi-book-sources-v1",
+    "book_selection": {
+      "mode": "both",
+      "label": "主棋谱库＋残局库",
+      "databases": {
+        "main": "/hy-tmp/xiangqi/Data/dataset.sqlite3",
+        "endgames": "/hy-tmp/xiangqi/Data/endgames.sqlite3"
+      },
+      "games": 29181,
+      "segments": 84853,
+      "by_source": {
+        "main": {
+          "games": 27179,
+          "segments": 82225
+        },
+        "endgames": {
+          "games": 2002,
+          "segments": 2628
+        }
+      },
+      "duplicate_games": 11,
+      "value_conflicts": 0,
+      "reader_version": "multi-book-sources-v1"
+    },
+    "validation_selection": {
+      "mode": "both",
+      "label": "主棋谱库＋残局库",
+      "databases": {
+        "main": "/hy-tmp/xiangqi/Data/dataset.sqlite3",
+        "endgames": "/hy-tmp/xiangqi/Data/endgames.sqlite3"
+      },
+      "games": 1687,
+      "segments": 4830,
+      "by_source": {
+        "main": {
+          "games": 1576,
+          "segments": 4682
+        },
+        "endgames": {
+          "games": 111,
+          "segments": 148
+        }
+      },
+      "duplicate_games": 1,
+      "value_conflicts": 0,
+      "reader_version": "multi-book-sources-v1"
+    },
+    "selfplay_games": 0,
+    "selfplay_segments": 0,
+    "validation_games": 1687,
+    "validation_segments": 4830,
+    "base_version": "Opus-5-e1-bcdb8df2",
+    "base_sha256": "c5704cbbb71b26ff062edc4352a3de25d173824dae7e56d26f2218abdcad2f63",
+    "model": {
+      "architecture": "Opus-5",
+      "version": 1,
+      "dim": 128,
+      "heads": [
+        16,
+        8,
+        4,
+        8,
+        4
+      ],
+      "context_windows": [
+        10,
+        20,
+        30,
+        20,
+        30
+      ],
+      "cores": 5,
+      "history_depth": 2,
+      "spatial_depth": 2,
+      "ffn_dim": 512,
+      "cnn_channels": 64,
+      "value_hidden": 64,
+      "tbptt_steps": 16,
+      "checkpoint_attention": true,
+      "encoding": "absolute-red-black-v1",
+      "dropout": 0.1
+    }
+  },
+  "report": {
+    "run_id": "opus-mixed-20261029-152352-250666",
+    "checkpoints": [
+      "417707599202451db4798a3c43f7b09c",
+      "6423099685584a2cb5780fb24a59c068",
+      "9cb661107ad3460eaa1c7f99572aa1a0"
+    ],
+    "global_step": 2184,
+    "model_db": "/hy-tmp/xiangqi/ModelParameters/Opus/models.sqlite3",
+    "completed_epochs": 4,
+    "completed_epochs_this_run": 3,
+    "interrupted": false,
+    "best": {
+      "checkpoint_id": "9cb661107ad3460eaa1c7f99572aa1a0",
+      "parameter_id": 5,
+      "epoch_in_run": 3,
+      "completed_epochs": 4,
+      "metric": "mean_slice_perplexity",
+      "validation": {
+        "metric": "mean_slice_perplexity",
+        "metric_version": "book-slice-ppl-sliding-context-v1",
+        "perplexity": 8.000253424163803,
+        "median_perplexity": 7.068653316978175,
+        "min_perplexity": 1.8603800953336835,
+        "max_perplexity": 40.18620253470156,
+        "corpus_perplexity": 6.618346982267269,
+        "loss": 2.1814851564323785,
+        "games": 4830,
+        "source_games": 1687,
+        "segments": 4830,
+        "steps": 124274,
+        "padding_steps": 30286,
+        "L": 32,
+        "n": 16,
+        "padding_probability": 0.5,
+        "book_selection": {
+          "mode": "both",
+          "label": "主棋谱库＋残局库",
+          "databases": {
+            "main": "/hy-tmp/xiangqi/Data/dataset.sqlite3",
+            "endgames": "/hy-tmp/xiangqi/Data/endgames.sqlite3"
+          },
+          "games": 1687,
+          "segments": 4830,
+          "by_source": {
+            "main": {
+              "games": 1576,
+              "segments": 4682
+            },
+            "endgames": {
+              "games": 111,
+              "segments": 148
+            }
+          },
+          "duplicate_games": 1,
+          "value_conflicts": 0,
+          "reader_version": "multi-book-sources-v1"
+        },
+        "histogram": {
+          "total": 4830,
+          "bins": [
+            {
+              "lower": 1,
+              "upper": 2,
+              "count": 18,
+              "label": "[1, 2)",
+              "percent": 0.37267080745341613
+            },
+            {
+              "lower": 2,
+              "upper": 4,
+              "count": 1180,
+              "label": "[2, 4)",
+              "percent": 24.43064182194617
+            },
+            {
+              "lower": 4,
+              "upper": 8,
+              "count": 1558,
+              "label": "[4, 8)",
+              "percent": 32.25672877846791
+            },
+            {
+              "lower": 8,
+              "upper": 16,
+              "count": 1739,
+              "label": "[8, 16)",
+              "percent": 36.00414078674948
+            },
+            {
+              "lower": 16,
+              "upper": 32,
+              "count": 332,
+              "label": "[16, 32)",
+              "percent": 6.873706004140787
+            },
+            {
+              "lower": 32,
+              "upper": 64,
+              "count": 3,
+              "label": "[32, 64)",
+              "percent": 0.062111801242236024
+            }
+          ]
+        },
+        "artifacts": {
+          "samples": "/hy-tmp/xiangqi/runs/mixed/opus-mixed-20261029-152352-250666/validation/epoch-0003/perplexities.jsonl",
+          "png": "/hy-tmp/xiangqi/runs/mixed/opus-mixed-20261029-152352-250666/validation/epoch-0003/perplexity-histogram.png",
+          "svg": "/hy-tmp/xiangqi/runs/mixed/opus-mixed-20261029-152352-250666/validation/epoch-0003/perplexity-histogram.svg"
+        }
+      }
+    },
+    "tensorboard_dir": "/hy-tmp/xiangqi/runs/mixed/opus-mixed-20261029-152352-250666/tensorboard",
+    "note": "训练损失与自弈结果不等于棋力提升；本入口没有使用固定对手评估选优。"
+  },
+  "load_verification": [
+    {
+      "id": 3,
+      "checkpoint_id": "417707599202451db4798a3c43f7b09c",
+      "completed_epochs": 2,
+      "parameter_count": 5156553,
+      "strict_load": true,
+      "finite_weights": true,
+      "value_trained": true
+    },
+    {
+      "id": 4,
+      "checkpoint_id": "6423099685584a2cb5780fb24a59c068",
+      "completed_epochs": 3,
+      "parameter_count": 5156553,
+      "strict_load": true,
+      "finite_weights": true,
+      "value_trained": true
+    },
+    {
+      "id": 5,
+      "checkpoint_id": "9cb661107ad3460eaa1c7f99572aa1a0",
+      "completed_epochs": 4,
+      "parameter_count": 5156553,
+      "strict_load": true,
+      "finite_weights": true,
+      "value_trained": true,
+      "optimizer_restored": true,
+      "optimizer_state_parameters": 456,
+      "forward_shapes": {
+        "policy": [
+          1,
+          8100
+        ],
+        "value": [
+          1,
+          3
+        ]
+      },
+      "legal_moves": 44,
+      "selected_legal_move": [
+        7,
+        7,
+        7,
+        4
+      ],
+      "finite_forward": true
+    }
+  ],
+  "checks": {
+    "manifest_hashes": true,
+    "sqlite_integrity": true,
+    "foreign_keys": true,
+    "old_checkpoints_identical": true,
+    "all_imported_weights_and_training_states_identical": true,
+    "original_logs_identical": true,
+    "other_databases_unchanged": {
+      "ModelParameters\\HaiKu\\models.sqlite3": "0da23b5cec3d561f6f907ab97ddd1877c1b870361de8ef0daab7bff1dda9905c",
+      "ModelParameters\\models.sqlite3": "94493129d2f84152439bd8c56dd5ba2a8a150cf705d7d0f2b51c3835bb996e57",
+      "Data\\dataset.sqlite3": "d1087bf3ea0b690dc4302cec7ecf94cf07c41a89826af38c67e4fad87ce261e6",
+      "Data\\endgames.sqlite3": "f3ed030a6f2e17158c024da09a7c4c6c6de8bb0d470ede50b3fc43cd1d45bc2c"
+    },
+    "installed_default_strict_load": true,
+    "public_model_matches_default_weights": true,
+    "public_value_prediction_finite_and_normalized": true
+  }
+}
