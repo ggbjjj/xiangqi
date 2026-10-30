@@ -142,6 +142,22 @@ def committed_game_ids(path,run_id):
         return [r[0] for r in conn.execute('SELECT game_id FROM games WHERE run_id=? ORDER BY rowid',(run_id,))]
 
 
+OUTCOME_KEYS={'1-0':'red_wins','0-1':'black_wins','1/2-1/2':'draws'}
+
+
+def empty_outcomes():
+    return dict.fromkeys(OUTCOME_KEYS.values(),0)
+
+
+def committed_outcomes(path,run_id):
+    """Count only committed games from this run, independently of cached counters."""
+    counts=empty_outcomes()
+    with closing(connect(path,True)) as conn:
+        for row in conn.execute('SELECT result,COUNT(*) FROM games WHERE run_id=? GROUP BY result',(run_id,)):
+            if row[0] in OUTCOME_KEYS: counts[OUTCOME_KEYS[row[0]]]=row[1]
+    return counts
+
+
 def list_runs(path):
     with closing(connect(path,True)) as conn:
         return [dict(r) for r in conn.execute('SELECT * FROM runs ORDER BY created_at,run_id')]

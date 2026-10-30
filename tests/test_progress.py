@@ -177,8 +177,9 @@ def test_selfplay_cli_batch_display_and_no_progress_roundtrip(generator,tmp_path
     from selfplay.generator import SelfPlayGenerator
     monkeypatch.setattr(SelfPlayGenerator,'from_version',lambda *a,**kw:generator)
     report=main(['--family','Opus','--id','ID1','--games','5','--save-every','4','--micro-batch','4',
-        '--device','cpu','--data-db',str(tmp_path/'cli.sqlite3'),'--no-progress'])
+        '--device','cpu','--data-db',str(tmp_path/'cli.sqlite3'),'--output',str(tmp_path/'runs'),'--no-progress'])
     assert report['saved_games']==5 and report['micro_batch']==4
+    assert report['outcomes']==report['saved_outcomes']=={'red_wins':0,'black_wins':0,'draws':5}
     assert report['progress']['completed']==5 and report['progress']['status']=='完成'
     assert '"saved_games": 5' in capsys.readouterr().out
 

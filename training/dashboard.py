@@ -1,4 +1,4 @@
-"""Serve live training curves with Chinese axes; TensorBoard remains optional."""
+"""Serve training curves and self-play outcomes; TensorBoard remains optional."""
 import argparse
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 import json
@@ -51,8 +51,8 @@ def launch_tensorboard(logdir,*,host='127.0.0.1',port=6006):
 
 
 def main(argv=None):
-    p=argparse.ArgumentParser(description='实时训练曲线窗口，中文坐标轴；训练停止后仍可查看历史曲线')
-    p.add_argument('--logdir',type=Path,default=ROOT/'runs',help='可选所有运行目录，或只选一次训练的输出目录')
+    p=argparse.ArgumentParser(description='实时训练与自弈统计窗口；停止后仍可查看历史记录')
+    p.add_argument('--logdir',type=Path,default=ROOT/'runs',help='全部运行目录，或某次训练/自弈的输出目录')
     p.add_argument('--host',default='127.0.0.1',help='本地默认回环地址；AutoDL 端口映射可指定 0.0.0.0')
     p.add_argument('--port',type=int,default=6006)
     p.add_argument('--open',action='store_true',help='本地自动打开默认浏览器；AutoDL 无桌面时省略')
@@ -69,7 +69,7 @@ def main(argv=None):
                 host='127.0.0.1' if args.host=='0.0.0.0' else args.host
                 if ':' in host: host=f'[{host}]'
                 url=f'http://{host}:{server.server_port}/'
-            print(f'实时曲线窗口：{url}\n日志目录：{args.logdir.resolve()}\n每秒刷新；Ctrl+C 仅关闭曲线服务，不中断训练。',flush=True)
+            print(f'实时训练/自弈窗口：{url}\n日志目录：{args.logdir.resolve()}\n每秒刷新；Ctrl+C 仅关闭窗口服务，不中断训练或生成。',flush=True)
             if args.open: webbrowser.open(url)
             while not stop.is_set(): stop.event.wait(.5)
     except (OSError,ValueError) as error: p.exit(1,f'{error}\n')

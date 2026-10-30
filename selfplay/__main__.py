@@ -1,10 +1,13 @@
 import argparse
 from dataclasses import asdict
+from datetime import datetime,timezone
 import json
 import math
 from pathlib import Path
 import sqlite3
 import sys
+
+from project_paths import ROOT
 
 
 def main(argv=None):
@@ -35,6 +38,7 @@ def main(argv=None):
     p.add_argument('--prefix-json',type=Path,help='有序动作 ID 的 JSON 数组；仅暖启动不作 PPO 标签')
     p.add_argument('--progress-interval',type=float,default=1.,help='终端进度与 GPU 信息刷新间隔秒数')
     p.add_argument('--no-progress',action='store_true',help='关闭动态进度展示，保留逐局结构化日志')
+    p.add_argument('--output',type=Path,default=ROOT/'runs'/'selfplay',help='胜负统计日志目录，默认 runs/selfplay；不影响棋局 SQLite 路径')
     args=p.parse_args(argv)
     import torch
     from .generator import SelfPlayGenerator,SelfPlayRules,generation_micro_batch
@@ -42,6 +46,8 @@ def main(argv=None):
     from training.control import StopController
     from training.progress import ConsoleProgress
     from model_store import get_default_parameter_id,get_latest_parameter_id,parameter_number
+    from .curves import SelfPlayCurves
+    curves=None
     try:
         if args.cpu_threads<1: raise ValueError('cpu-threads 必须为正')
         if not math.isfinite(args.progress_interval) or args.progress_interval<=0: raise ValueError('progress-interval 必须为正有限数')
@@ -63,22 +69,39 @@ def main(argv=None):
         kwargs={'path':args.data_db,'save_every':args.save_every,'micro_batch':micro_batch}
         if args.start_fen: kwargs['start_fen']=args.start_fen
         if args.prefix_json: kwargs['prefix']=json.loads(args.prefix_json.read_text(encoding='utf-8'))
+        def on_start(row):
+            nonlocal curves
+            name=datetime.now(timezone.utc).strftime(f'{args.family.lower()}-selfplay-%Y%m%d-%H%M%S-')+row['run_id'][:8]
+            curves=SelfPlayCurves(args.output/name,{**vars(args),**row,'model':asdict(generator.snapshot)})
+            logdir=ROOT/'runs' if args.output.resolve().is_relative_to(ROOT/'runs') else args.output.resolve()
+            print(f'自弈胜负统计：{curves.directory.resolve()}\n'
+                  f'查看窗口：python -m training.dashboard --logdir "{logdir}" --port 6006\n'
+                  '浏览器打开 http://127.0.0.1:6006/，选择本次自弈运行；每秒刷新。',flush=True)
         with StopController() as stop, ConsoleProgress(f'{args.family} 自弈',args.games,device=device,unit='局',
                 interval=args.progress_interval,enabled=not args.no_progress,
                 fallback_work_total=args.games*args.max_plies) as display:
-            display.update(已保存=0,缓冲=0,微批上限=micro_batch,并行局数=0)
+            display.update(已保存=0,缓冲=0,微批上限=micro_batch,并行局数=0,红胜=0,黑胜=0,和棋=0)
             def on_game(row):
-                display.update(1,games=1,phase='批量生成',已保存=row['saved_games'],缓冲=row['buffered_games'],微批上限=micro_batch)
+                curves.game(row)
+                counts=row['outcomes']
+                display.update(1,games=1,phase='批量生成',已保存=row['saved_games'],缓冲=row['buffered_games'],微批上限=micro_batch,
+                               红胜=counts['red_wins'],黑胜=counts['black_wins'],和棋=counts['draws'])
                 if args.no_progress: print(json.dumps(row,ensure_ascii=False),flush=True)
             def on_step(row):
                 display.update(work=row['steps'],batches=row['batches'],phase=row['phase'],并行局数=row['active'])
-            report=generator.generate(args.games,cancel_event=stop,progress=on_game,on_step=on_step,**kwargs)
+            report=generator.generate(args.games,cancel_event=stop,progress=on_game,on_step=on_step,on_start=on_start,**kwargs)
+            curves.finish(report)
             display.update(phase='结束',已保存=report['saved_games'],缓冲=0,并行局数=0)
             display.close('已中断' if report['interrupted'] else '完成')
             report['progress']=display.snapshot()
         report['model']=asdict(report['model'])
+        report['output']=str(curves.directory.resolve())
+        counts=report['saved_outcomes']
+        print(f'本次已保存棋局胜负：红胜 {counts["red_wins"]} 局 / 黑胜 {counts["black_wins"]} 局 / 和棋 {counts["draws"]} 局',flush=True)
         print(json.dumps(report,ensure_ascii=False,indent=2)); return report
     except (ValueError,OSError,sqlite3.Error) as error: p.exit(1,f'{error}\n')
+    finally:
+        if curves is not None: curves.close()
 
 
 if __name__=='__main__': main()

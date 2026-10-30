@@ -7,7 +7,8 @@ from data_pipeline.notation import STANDARD_FEN,from_fen,to_fen
 from model_store import load_version
 from training.exploration import Exploration,sample_actions
 from training.loss import split_output
-from .store import Snapshot,create_run,save_games,finish_run,committed_game_ids
+from .store import (Snapshot,create_run,save_games,finish_run,committed_game_ids,
+                    OUTCOME_KEYS,empty_outcomes,committed_outcomes)
 from training.control import WorkInterrupted,check_stop
 from repetition import RepetitionTracker,REPETITION_POLICY
 
@@ -105,7 +106,7 @@ class SelfPlayGenerator:
         return policy,value,cache
 
     def generate(self,games,*,path=None,start_fen=STANDARD_FEN,prefix=(),cancel_event=None,progress=None,
-                 save_every=16,micro_batch=None,on_step=None):
+                 save_every=16,micro_batch=None,on_step=None,on_start=None):
         if type(games) is not int or games<1: raise ValueError('对局数量必须为正整数')
         micro_batch=generation_micro_batch(save_every,micro_batch)
         prefix=tuple(prefix)
@@ -119,7 +120,13 @@ class SelfPlayGenerator:
         path,run_id=create_run(self.snapshot,self.exploration,self.rules,self.has_value_head,self.seed,path,
                                save_every=save_every,requested_games=games,micro_batch=micro_batch,device=str(self.device))
         ids=[]; pending=[]; completed=0; interrupted=False; active=[]; generated_steps=0; inference_batches=0
+        outcomes=empty_outcomes(); saved_outcomes=empty_outcomes()
+        def commit_pending():
+            ids.extend(save_games(path,run_id,pending))
+            for game in pending: saved_outcomes[OUTCOME_KEYS[game['result']]]+=1
+            pending.clear()
         try:
+            if on_start: on_start({'run_id':run_id,'data_db':str(path),'requested_games':games})
             for wave_start in range(0,games,micro_batch):
                 check_stop(cancel_event)
                 size=min(micro_batch,games-wave_start)
@@ -143,11 +150,13 @@ class SelfPlayGenerator:
                             pending.append({'start_fen':start_fen,'prefix':prefix,'steps':records[i],'result':result,
                                 'termination':reason,'final_fen':to_fen(position.board,position.turn),'generation_index':wave_start+i})
                             completed+=1
+                            outcomes[OUTCOME_KEYS[result]]+=1
                             if len(pending)>=save_every:
-                                ids.extend(save_games(path,run_id,pending)); pending.clear()
+                                commit_pending()
                             if progress:
                                 progress({'game':completed,'saved_games':len(ids),'buffered_games':len(pending),
-                                    'plies':len(records[i]),'result':result,'termination':reason,'micro_batch':size})
+                                    'plies':len(records[i]),'result':result,'termination':reason,'micro_batch':size,
+                                    'outcomes':dict(outcomes),'saved_outcomes':dict(saved_outcomes)})
                             check_stop(cancel_event)
                         else: masks[i]=torch.from_numpy(legal)
                     if not any(active): break
@@ -163,10 +172,11 @@ class SelfPlayGenerator:
                     inference_batches+=1; generated_steps+=sum(active)
                     if on_step: on_step({'phase':'GPU 批量走棋','steps':sum(active),'batches':1,'active':sum(active)})
             check_stop(cancel_event)
-            if pending: ids.extend(save_games(path,run_id,pending)); pending.clear()
+            if pending: commit_pending()
         except (WorkInterrupted,KeyboardInterrupt):
             interrupted=True
         ids=committed_game_ids(path,run_id)
+        saved_outcomes=committed_outcomes(path,run_id)
         discarded=completed-len(ids)
         pending.clear()
         finish_run(path,run_id,completed=completed,saved=len(ids),discarded=discarded,interrupted=interrupted)
@@ -174,4 +184,6 @@ class SelfPlayGenerator:
                 'requested_games':games,'completed_games':completed,'saved_games':len(ids),
                 'discarded_games':discarded,'unfinished_game_discarded':any(active),'unfinished_games':sum(active),
                 'save_every':save_every,'micro_batch':micro_batch,'generated_steps':generated_steps,
-                'inference_batches':inference_batches,'interrupted':interrupted}
+                'inference_batches':inference_batches,'interrupted':interrupted,
+                'outcomes':outcomes,'saved_outcomes':saved_outcomes,
+                'discarded_outcomes':{key:outcomes[key]-saved_outcomes[key] for key in outcomes}}

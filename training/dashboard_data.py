@@ -21,7 +21,7 @@ class CurveReader:
 
     def read(self,run):
         from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
-        if run not in self.runs(): raise ValueError('训练运行不存在，请重新选择')
+        if run not in self.runs(): raise ValueError('运行不存在，请重新选择')
         path=(self.logdir/run).resolve()
         with self.lock:
             if run not in self.cache:
@@ -48,5 +48,13 @@ class CurveReader:
                 validation=json.loads(candidate.read_text(encoding='utf-8'))
                 if not isinstance(validation.get('histogram',{}).get('bins'),list): validation=None
             except (OSError,ValueError,AttributeError): validation=None
-        return {'run':run,'series':series,'weights':weights,'display_point_limit':2000,
-                'validation_perplexity':validation}
+        selfplay=None
+        candidate=path.parent/'selfplay.json'
+        if candidate.resolve().is_relative_to(self.logdir):
+            try:
+                supplied=json.loads(candidate.read_text(encoding='utf-8'))
+                if supplied.get('kind')=='selfplay': selfplay=supplied
+            except (OSError,ValueError,AttributeError): pass
+        return {'run':run,'kind':'selfplay' if selfplay is not None else 'training',
+                'series':series,'weights':weights,'display_point_limit':2000,
+                'validation_perplexity':validation,'selfplay':selfplay}
